@@ -1,0 +1,1489 @@
+{
+  "metadata": {
+    "source": "poe.re + poedb 3.30",
+    "patch": "3.30.0.3",
+    "count": 122
+  },
+  "groups": {
+    "Map Boss is accompanied by a Synthesis Boss": {
+      "Type": "Uber",
+      "Descriptions": [
+        "Map Boss is accompanied by a Synthesis Boss"
+      ],
+      "BaseMods": [
+        "MapUberModSynthMiniboss"
+      ],
+      "Regex": "cco",
+      "RawText": "Map Boss is accompanied by a Synthesis Boss"
+    },
+    "Players have #% less Recovery Rate of Life and Energy Shield": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Players have #% less Recovery Rate of Life and Energy Shield"
+      ],
+      "BaseMods": [
+        "MapPlayerReducedRegen3MapWorlds",
+        "MapPlayerReducedRegen"
+      ],
+      "Regex": "te o",
+      "RawText": "Players have (20-60)% less Recovery Rate of Life and Energy Shield"
+    },
+    "Players have -#% to all maximum Resistances": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Players have -#% to all maximum Resistances"
+      ],
+      "BaseMods": [
+        "MapUberModMinusMax",
+        "MapPlayerMaxResists"
+      ],
+      "Regex": "m resistances$",
+      "RawText": "Players have -(5-12)% to all maximum Resistances"
+    },
+    "Monsters have +#% Chance to Block Attack Damage": {
+      "Type": "Uber",
+      "Descriptions": [
+        "Monsters have +#% Chance to Block Attack Damage"
+      ],
+      "BaseMods": [
+        "MapUberModMonsterAttackBlock"
+      ],
+      "Regex": "k damage$",
+      "RawText": "Monsters have +50% Chance to Block Attack Damage"
+    },
+    "Area is inhabited by Cultists of Kitava": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area is inhabited by Cultists of Kitava"
+      ],
+      "BaseMods": [
+        "MapMonsterPacksKitavaMapWorlds_",
+        "MapMonsterPacks"
+      ],
+      "Regex": "va$",
+      "RawText": "Area is inhabited by Cultists of Kitava"
+    },
+    "Area contains a buried Pandemonium Sentinel": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area contains a buried Pandemonium Sentinel"
+      ],
+      "BaseMods": [
+        "MapContainsSentinelPandemoniumWorlds",
+        "MapContainsSentinel"
+      ],
+      "Regex": "ied p",
+      "RawText": "Area contains a buried Pandemonium Sentinel"
+    },
+    "Rare monsters in area are Shaper-Touched": {
+      "Type": "Uber",
+      "Descriptions": [
+        "Rare monsters in area are Shaper-Touched"
+      ],
+      "BaseMods": [
+        "MapUberModShaperTouched"
+      ],
+      "Regex": "re sha",
+      "RawText": "Rare monsters in area are Shaper-Touched"
+    },
+    "Monsters have #% chance to Avoid Elemental Ailments": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Monsters have #% chance to Avoid Elemental Ailments"
+      ],
+      "BaseMods": [
+        "MapMonsterStatusAilmentImmunityMapWorlds",
+        "MapMonsterStatusAilmentImmunity"
+      ],
+      "Regex": "id e",
+      "RawText": "Monsters have (30-70)% chance to Avoid Elemental Ailments"
+    },
+    "Rare Monsters each have # additional Modifier": {
+      "Type": "Uber",
+      "Descriptions": [
+        "Rare Monsters each have # additional Modifier",
+        "#% increased number of Rare Monsters"
+      ],
+      "BaseMods": [
+        "MapNemesisModOnRaresMapWorlds",
+        "MapNemesisModOnRares",
+        "MapUberModRareMonsters",
+        "MapRareMonsters"
+      ],
+      "Regex": "fier$",
+      "RawText": "Rare Monsters each have 1 additional Modifier|(35-45)% increased number of Rare Monsters"
+    },
+    "Area contains Unstable Tentacle Fiends": {
+      "Type": "Uber",
+      "Descriptions": [
+        "Area contains Unstable Tentacle Fiends"
+      ],
+      "BaseMods": [
+        "MapUberModElderNovas"
+      ],
+      "Regex": "stab",
+      "RawText": "Area contains Unstable Tentacle Fiends"
+    },
+    "Monsters gain a Frenzy Charge on Hit": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Monsters gain a Frenzy Charge on Hit"
+      ],
+      "BaseMods": [
+        "MapMonstersFrenzyChargeOnHitMapWorlds",
+        "MapMonstersFrenzyChargeOnHit"
+      ],
+      "Regex": "n a f",
+      "RawText": "Monsters gain a Frenzy Charge on Hit"
+    },
+    "Monsters gain #% of Maximum Life as Extra Maximum Energy Shield": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Monsters gain #% of Maximum Life as Extra Maximum Energy Shield"
+      ],
+      "BaseMods": [
+        "MapMonstersMaximumLifeAddedEnergyShield3MapWorlds",
+        "MapMonstersMaximumLifeAddedEnergyShield",
+        "MapUberModLifeAsEnergyShield"
+      ],
+      "Regex": "m energy shield$",
+      "RawText": "Monsters gain (20-80)% of Maximum Life as Extra Maximum Energy Shield"
+    },
+    "Area contains an Evocator of K'Tash": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area contains an Evocator of K'Tash"
+      ],
+      "BaseMods": [
+        "MapContainsBeyond",
+        "MapContainsBeyondDemonFactionWorlds"
+      ],
+      "Regex": "r of k",
+      "RawText": "Area contains an Evocator of K'Tash"
+    },
+    "Players have #% less Cooldown Recovery Rate": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Players have #% less Cooldown Recovery Rate"
+      ],
+      "BaseMods": [
+        "MapPlayersLessCooldownRecovery3MapWorlds",
+        "MapPlayerCooldownRecovery"
+      ],
+      "Regex": "rate$",
+      "RawText": "Players have (20-40)% less Cooldown Recovery Rate"
+    },
+    "Rare Monsters have Physical Thorns reflecting # Physical Damage": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Rare Monsters have Physical Thorns reflecting # Physical Damage"
+      ],
+      "BaseMods": [
+        "MapMonsterPhysicalReflection3MapWorlds",
+        "MapMonsterPhysicalReflection",
+        "MapUberModReflect",
+        "MapMonsterElementalReflection"
+      ],
+      "Regex": "ve phy",
+      "RawText": "Rare Monsters have Physical Thorns reflecting (400-800) Physical Damage"
+    },
+    "Monsters steal Power, Frenzy and Endurance charges on Hit": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Monsters steal Power, Frenzy and Endurance charges on Hit"
+      ],
+      "BaseMods": [
+        "MapMonstersStealChargesOnHitMapWorlds",
+        "MapMonstersStealChargesOnHit"
+      ],
+      "Regex": "r, f",
+      "RawText": "Monsters steal Power, Frenzy and Endurance charges on Hit"
+    },
+    "Monsters have #% increased Critical Strike Chance": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Monsters have #% increased Critical Strike Chance",
+        "+#% to Monster Critical Strike Multiplier"
+      ],
+      "BaseMods": [
+        "MapMonsterCriticalStrikesAndDamage3MapWorlds",
+        "MapMonsterCriticalStrikesAndDamage",
+        "MapUberModCrit"
+      ],
+      "Regex": "lier$",
+      "RawText": "Monsters have (160-400)% increased Critical Strike Chance|+(30-45)% to Monster Critical Strike Multiplier"
+    },
+    "Area contains a buried Stalker Sentinel": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area contains a buried Stalker Sentinel"
+      ],
+      "BaseMods": [
+        "MapContainsSentinelStalkerWorlds",
+        "MapContainsSentinel"
+      ],
+      "Regex": "talk",
+      "RawText": "Area contains a buried Stalker Sentinel"
+    },
+    "Monsters' Attacks have #% chance to Impale on Hit": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Monsters' Attacks have #% chance to Impale on Hit"
+      ],
+      "BaseMods": [
+        "MapMonstersImpaleOnHit3MapWorlds_",
+        "MapMonstersImpaleOnHit"
+      ],
+      "Regex": "' at",
+      "RawText": "Monsters' Attacks have (25-60)% chance to Impale on Hit"
+    },
+    "Monster Damage Penetrates #% Elemental Resistances": {
+      "Type": "Uber",
+      "Descriptions": [
+        "Monster Damage Penetrates #% Elemental Resistances"
+      ],
+      "BaseMods": [
+        "MapUberModEleDamagePenetration"
+      ],
+      "Regex": "trate",
+      "RawText": "Monster Damage Penetrates 15% Elemental Resistances"
+    },
+    "Area contains a Mirror of Delirium": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area contains a Mirror of Delirium"
+      ],
+      "BaseMods": [
+        "MapContainsDeliriumMirrorWorlds",
+        "MapContainsDelirium"
+      ],
+      "Regex": "irium$",
+      "RawText": "Area contains a Mirror of Delirium"
+    },
+    "Area has patches of Consecrated Ground": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area has patches of Consecrated Ground"
+      ],
+      "BaseMods": [
+        "MapConsecratedGround3MapWorlds__",
+        "MapGroundEffect"
+      ],
+      "Regex": "s of co",
+      "RawText": "Area has patches of Consecrated Ground"
+    },
+    "Area contains many Totems": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area contains many Totems"
+      ],
+      "BaseMods": [
+        "MapTotemsMapWorlds",
+        "MapTotems"
+      ],
+      "Regex": "many",
+      "RawText": "Area contains many Totems"
+    },
+    "Unique Boss deals #% increased Damage": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Unique Boss deals #% increased Damage",
+        "Unique Boss has #% increased Attack and Cast Speed"
+      ],
+      "BaseMods": [
+        "MapDangerousBoss3MapWorlds",
+        "MapDangerousBoss"
+      ],
+      "Regex": "oss d",
+      "RawText": "Unique Boss deals (15-25)% increased Damage|Unique Boss has (20-30)% increased Attack and Cast Speed"
+    },
+    "Area contains a Mirage": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area contains a Mirage"
+      ],
+      "BaseMods": [
+        "MapContainsMirageWorlds",
+        "Mirage"
+      ],
+      "Regex": "rage$",
+      "RawText": "Area contains a Mirage"
+    },
+    "Area is inhabited by ranged monsters": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area is inhabited by ranged monsters"
+      ],
+      "BaseMods": [
+        "MapMonsterPacksRangedMapWorlds",
+        "MapMonsterPacks"
+      ],
+      "Regex": "by r",
+      "RawText": "Area is inhabited by ranged monsters"
+    },
+    "Players have #% reduced Chance to Block": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Players have #% reduced Chance to Block",
+        "Players have #% less Armour"
+      ],
+      "BaseMods": [
+        "MapPlayersBlockAndArmour3MapWorlds",
+        "MapPlayersBlockAndArmour"
+      ],
+      "Regex": "ur$",
+      "RawText": "Players have (20-40)% reduced Chance to Block|Players have (20-30)% less Armour"
+    },
+    "Monsters' skills Chain # additional times": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Monsters' skills Chain # additional times"
+      ],
+      "BaseMods": [
+        "MapMonsterChainMapWorlds",
+        "MapMonsterChain",
+        "MapUberModChain",
+        "MabUberModChaining"
+      ],
+      "Regex": "' s",
+      "RawText": "Monsters' skills Chain 2 additional times"
+    },
+    "Buffs on Players expire #% faster": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Buffs on Players expire #% faster"
+      ],
+      "BaseMods": [
+        "MapPlayersBuffsExpireFaster3MapWorlds",
+        "MapPlayerBuffsExpireFaster",
+        "MapUberModBuffExpiry"
+      ],
+      "Regex": "^buffs",
+      "RawText": "Buffs on Players expire (30-100)% faster"
+    },
+    "#% increased Monster Cast Speed": {
+      "Type": "Uber",
+      "Descriptions": [
+        "#% increased Monster Cast Speed",
+        "#% increased Monster Attack Speed",
+        "#% increased Monster Movement Speed"
+      ],
+      "BaseMods": [
+        "MapUberModTurbo",
+        "MapTurbo"
+      ],
+      "Regex": "r cas",
+      "RawText": "(35-45)% increased Monster Cast Speed|(35-45)% increased Monster Attack Speed|(25-30)% increased Monster Movement Speed"
+    },
+    "Monsters inflict # Grasping Vines on Hit": {
+      "Type": "Uber",
+      "Descriptions": [
+        "Monsters inflict # Grasping Vines on Hit"
+      ],
+      "BaseMods": [
+        "MapUberModVines"
+      ],
+      "Regex": "g vi",
+      "RawText": "Monsters inflict 2 Grasping Vines on Hit"
+    },
+    "Area contains Drowning Orbs": {
+      "Type": "Uber",
+      "Descriptions": [
+        "Area contains Drowning Orbs"
+      ],
+      "BaseMods": [
+        "MapUberModDrowningOrbs",
+        "MapUberModAmbush"
+      ],
+      "Regex": "g or",
+      "RawText": "Area contains Drowning Orbs"
+    },
+    "Area contains an Evocator of Beidat": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area contains an Evocator of Beidat"
+      ],
+      "BaseMods": [
+        "MapContainsBeyond",
+        "MapContainsBeyondPaleFactionWorlds"
+      ],
+      "Regex": "r of b",
+      "RawText": "Area contains an Evocator of Beidat"
+    },
+    "Players gain #% reduced Flask Charges": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Players gain #% reduced Flask Charges"
+      ],
+      "BaseMods": [
+        "MapPlayersGainReducedFlaskCharges3MapWorlds_",
+        "MapPlayersGainReducedFlaskCharges"
+      ],
+      "Regex": "ced f",
+      "RawText": "Players gain (30-50)% reduced Flask Charges"
+    },
+    "Area is inhabited by Lunaris fanatics": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area is inhabited by Lunaris fanatics"
+      ],
+      "BaseMods": [
+        "MapMonsterPacksLunarisMapWorlds_",
+        "MapMonsterPacks"
+      ],
+      "Regex": "unari",
+      "RawText": "Area is inhabited by Lunaris fanatics"
+    },
+    "+#% Monster Chaos Resistance": {
+      "Type": "Generic",
+      "Descriptions": [
+        "+#% Monster Chaos Resistance",
+        "+#% Monster Elemental Resistances"
+      ],
+      "BaseMods": [
+        "MapMonstersAllResistances3MapWorlds",
+        "MapMonstersAllResistances"
+      ],
+      "Regex": "ter e",
+      "RawText": "+(15-25)% Monster Chaos Resistance|+(20-40)% Monster Elemental Resistances"
+    },
+    "Area is inhabited by Undead": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area is inhabited by Undead"
+      ],
+      "BaseMods": [
+        "MapMonsterPacksUndeadMapWorlds_",
+        "MapMonsterPacks"
+      ],
+      "Regex": "y un",
+      "RawText": "Area is inhabited by Undead"
+    },
+    "#% increased number of Rare Monsters": {
+      "Type": "Generic",
+      "Descriptions": [
+        "#% increased number of Rare Monsters"
+      ],
+      "BaseMods": [],
+      "Regex": "d nu",
+      "RawText": "(20-30)% increased number of Rare Monsters"
+    },
+    "Monsters gain #% of their Physical Damage as Extra Damage of a random Element": {
+      "Type": "Uber",
+      "Descriptions": [
+        "Monsters gain #% of their Physical Damage as Extra Damage of a random Element"
+      ],
+      "BaseMods": [
+        "MapUberModDamageAsElemental"
+      ],
+      "Regex": "element$",
+      "RawText": "Monsters gain (180-200)% of their Physical Damage as Extra Damage of a random Element"
+    },
+    "Monsters have a #% chance to avoid Poison, Impale, and Bleeding": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Monsters have a #% chance to avoid Poison, Impale, and Bleeding"
+      ],
+      "BaseMods": [
+        "MapMonstersAvoidPoisonBleedBlind3MapWorlds",
+        "MapMonstersAvoidPoisonBleedBlind"
+      ],
+      "Regex": "son,",
+      "RawText": "Monsters have a (20-50)% chance to avoid Poison, Impale, and Bleeding"
+    },
+    "Area is inhabited by Humanoids": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area is inhabited by Humanoids"
+      ],
+      "BaseMods": [
+        "MapMonsterPacksHumanoidsMapWorlds",
+        "MapMonsterPacks"
+      ],
+      "Regex": "hum",
+      "RawText": "Area is inhabited by Humanoids"
+    },
+    "#% increased Monster Damage": {
+      "Type": "Generic",
+      "Descriptions": [
+        "#% increased Monster Damage"
+      ],
+      "BaseMods": [
+        "MapMonsterDamage3MapWorlds",
+        "MapMonsterDamage",
+        "MapUberModMonsterDamage"
+      ],
+      "Regex": "r damage$",
+      "RawText": "(14-40)% increased Monster Damage"
+    },
+    "#% less effect of Curses on Monsters": {
+      "Type": "Generic",
+      "Descriptions": [
+        "#% less effect of Curses on Monsters"
+      ],
+      "BaseMods": [
+        "MapMonstersCurseEffectOnSelfFinal3MapWorlds",
+        "MapHexproof"
+      ],
+      "Regex": "es on m",
+      "RawText": "(25-60)% less effect of Curses on Monsters"
+    },
+    "Monsters have +#% chance to Suppress Spell Damage": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Monsters have +#% chance to Suppress Spell Damage"
+      ],
+      "BaseMods": [
+        "MapMonstersChanceToSuppressSpells3MapWorlds",
+        "MapMonstersChanceToSuppressSpells",
+        "MapUberModMonsterSuppress"
+      ],
+      "Regex": "ll damage$",
+      "RawText": "Monsters have +(30-100)% chance to Suppress Spell Damage"
+    },
+    "+#% Monster Physical Damage Reduction": {
+      "Type": "Generic",
+      "Descriptions": [
+        "+#% Monster Physical Damage Reduction"
+      ],
+      "BaseMods": [
+        "MapMonsterPhysicalResistance3MapWorlds_",
+        "MapMonsterPhysicalResistance",
+        "MapUberModResistancePDR",
+        "MapMonstersAllResistances"
+      ],
+      "Regex": "er ph",
+      "RawText": "+(20-40)% Monster Physical Damage Reduction"
+    },
+    "Monsters gain an Endurance Charge on Hit": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Monsters gain an Endurance Charge on Hit"
+      ],
+      "BaseMods": [
+        "MapMonstersEnduranceChargeOnHitMapWorlds",
+        "MapMonstersEnduranceChargeOnHit"
+      ],
+      "Regex": "e charge on hit$",
+      "RawText": "Monsters gain an Endurance Charge on Hit"
+    },
+    "Area is inhabited by Goatmen": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area is inhabited by Goatmen"
+      ],
+      "BaseMods": [
+        "MapMonsterPacksGoatmenMapWorlds",
+        "MapMonsterPacks"
+      ],
+      "Regex": "goa",
+      "RawText": "Area is inhabited by Goatmen"
+    },
+    "Area contains a buried Apex Sentinel": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area contains a buried Apex Sentinel"
+      ],
+      "BaseMods": [
+        "MapContainsSentinelApexWorlds",
+        "MapContainsSentinel"
+      ],
+      "Regex": "pex",
+      "RawText": "Area contains a buried Apex Sentinel"
+    },
+    "#% more Monster Life": {
+      "Type": "Generic",
+      "Descriptions": [
+        "#% more Monster Life"
+      ],
+      "BaseMods": [
+        "MapMonsterCannotBeStunned3MapWorlds_",
+        "MapMonsterCannotBeStunned",
+        "MapMonsterLife3MapWorlds",
+        "MapMonsterLife",
+        "MapUberModMonsterLife"
+      ],
+      "Regex": "ore mo",
+      "RawText": "(20-100)% more Monster Life"
+    },
+    "Monsters have a #% chance to Ignite, Freeze and Shock on Hit": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Monsters have a #% chance to Ignite, Freeze and Shock on Hit"
+      ],
+      "BaseMods": [
+        "MapMonstersChanceToInflictStatusAilments2MapWorlds",
+        "MapMonstersChanceToInflictStatusAilments"
+      ],
+      "Regex": "o ignite,",
+      "RawText": "Monsters have a (15-20)% chance to Ignite, Freeze and Shock on Hit"
+    },
+    "Area has patches of desecrated ground": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area has patches of desecrated ground"
+      ],
+      "BaseMods": [
+        "MapDesecratedGround3MapWorlds",
+        "MapGroundEffect"
+      ],
+      "Regex": "es of d",
+      "RawText": "Area has patches of desecrated ground"
+    },
+    "Monsters Ignite, Freeze and Shock on Hit": {
+      "Type": "Uber",
+      "Descriptions": [
+        "Monsters Ignite, Freeze and Shock on Hit",
+        "All Monster Damage can Ignite, Freeze and Shock"
+      ],
+      "BaseMods": [
+        "MapUberModMonsterAilments"
+      ],
+      "Regex": "hock$",
+      "RawText": "Monsters Ignite, Freeze and Shock on Hit|All Monster Damage can Ignite, Freeze and Shock"
+    },
+    "Players have #% less Accuracy Rating": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Players have #% less Accuracy Rating"
+      ],
+      "BaseMods": [
+        "MapPlayersAccuracyRating3MapWorlds",
+        "MapPlayerAccuracyRating"
+      ],
+      "Regex": "e \\d+% less ac",
+      "RawText": "Players have (15-25)% less Accuracy Rating"
+    },
+    "Unique Boss has #% increased Life": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Unique Boss has #% increased Life",
+        "Unique Boss has #% increased Area of Effect"
+      ],
+      "BaseMods": [
+        "MapMassiveBoss3MapWorlds",
+        "MapMassiveBoss"
+      ],
+      "Regex": "d life$",
+      "RawText": "Unique Boss has (25-35)% increased Life|Unique Boss has (45-70)% increased Area of Effect"
+    },
+    "Unique Bosses are Possessed": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Unique Bosses are Possessed"
+      ],
+      "BaseMods": [
+        "MapUberModPossessedBoss",
+        "MapBossIsPossessed"
+      ],
+      "Regex": "sed$",
+      "RawText": "Unique Bosses are Possessed"
+    },
+    "Players have #% less effect of Flasks applied to them": {
+      "Type": "Uber",
+      "Descriptions": [
+        "Players have #% less effect of Flasks applied to them"
+      ],
+      "BaseMods": [
+        "MapUberModLessFlaskEffect"
+      ],
+      "Regex": "em$",
+      "RawText": "Players have 40% less effect of Flasks applied to them"
+    },
+    "Monsters Maim on Hit with Attacks": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Monsters Maim on Hit with Attacks"
+      ],
+      "BaseMods": [
+        "MapMonstersMaimOnHitMapWorlds",
+        "MapMonstersMaimOnHit"
+      ],
+      "Regex": "cks$",
+      "RawText": "Monsters Maim on Hit with Attacks"
+    },
+    "Monsters take #% reduced Extra Damage from Critical Strikes": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Monsters take #% reduced Extra Damage from Critical Strikes"
+      ],
+      "BaseMods": [
+        "MapMonstersBaseSelfCriticalMultiplier3MapWorlds",
+        "MapMonstersBaseSelfCriticalMultiplier",
+        "MapUberModCritDefence"
+      ],
+      "Regex": "kes$",
+      "RawText": "Monsters take (25-45)% reduced Extra Damage from Critical Strikes"
+    },
+    "Monsters deal #% extra Physical Damage as Fire": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Monsters deal #% extra Physical Damage as Fire"
+      ],
+      "BaseMods": [
+        "MapMonsterFireDamage3MapWorlds",
+        "MapMonsterFireDamage"
+      ],
+      "Regex": "fire$",
+      "RawText": "Monsters deal (50-110)% extra Physical Damage as Fire"
+    },
+    "Monsters gain #% of their Physical Damage as Extra Chaos Damage": {
+      "Type": "Uber",
+      "Descriptions": [
+        "Monsters gain #% of their Physical Damage as Extra Chaos Damage"
+      ],
+      "BaseMods": [
+        "MapMonsterChaosDamage3MapWorlds",
+        "MapMonsterChaosDamage",
+        "MapUberModDamageAsChaos"
+      ],
+      "Regex": "s damage$",
+      "RawText": "Monsters gain (80-100)% of their Physical Damage as Extra Chaos Damage"
+    },
+    "#% increased Monster Movement Speed": {
+      "Type": "Generic",
+      "Descriptions": [
+        "#% increased Monster Movement Speed",
+        "#% increased Monster Attack Speed",
+        "#% increased Monster Cast Speed"
+      ],
+      "BaseMods": [],
+      "Regex": "er at",
+      "RawText": "(15-30)% increased Monster Movement Speed|(20-45)% increased Monster Attack Speed|(20-45)% increased Monster Cast Speed"
+    },
+    "Area is inhabited by Skeletons": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area is inhabited by Skeletons"
+      ],
+      "BaseMods": [
+        "MapMonsterPacksSkeletonsMapWorlds_",
+        "MapMonsterPacks"
+      ],
+      "Regex": "leto",
+      "RawText": "Area is inhabited by Skeletons"
+    },
+    "Players have -#% to amount of Suppressed Spell Damage Prevented": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Players have -#% to amount of Suppressed Spell Damage Prevented",
+        "Monsters have #% increased Accuracy Rating"
+      ],
+      "BaseMods": [
+        "MapPlayersEvasionAndUnluckyDodge3MapWorlds",
+        "MapMonsterAccuracyPlayersUnlockyDodge"
+      ],
+      "Regex": "o am",
+      "RawText": "Players have -(10-20)% to amount of Suppressed Spell Damage Prevented|Monsters have (30-50)% increased Accuracy Rating"
+    },
+    "Area has increased monster variety": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area has increased monster variety"
+      ],
+      "BaseMods": [
+        "MapMoreMonsterPackVarietyMapWorlds_",
+        "MapMonsterPacks"
+      ],
+      "Regex": "ety",
+      "RawText": "Area has increased monster variety"
+    },
+    "Area is inhabited by Solaris fanatics": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area is inhabited by Solaris fanatics"
+      ],
+      "BaseMods": [
+        "MapMonsterPacksSolarisMapWorlds_",
+        "MapMonsterPacks"
+      ],
+      "Regex": "laris",
+      "RawText": "Area is inhabited by Solaris fanatics"
+    },
+    "+#% to Monster Critical Strike Multiplier": {
+      "Type": "Uber",
+      "Descriptions": [
+        "+#% to Monster Critical Strike Multiplier",
+        "Monsters have #% increased Critical Strike Chance"
+      ],
+      "BaseMods": [],
+      "Regex": "lier$",
+      "RawText": "+(70-75)% to Monster Critical Strike Multiplier|Monsters have (650-700)% increased Critical Strike Chance"
+    },
+    "Monsters cannot be Leeched from": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Monsters cannot be Leeched from"
+      ],
+      "BaseMods": [
+        "MapMonsterLifeLeechImmunityMapWorlds",
+        "MapMonsterLifeLeechImmunity"
+      ],
+      "Regex": "from$",
+      "RawText": "Monsters cannot be Leeched from"
+    },
+    "Players have #% less Area of Effect": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Players have #% less Area of Effect"
+      ],
+      "BaseMods": [
+        "MapPlayersLessAoERadius3MapWorlds",
+        "MapPlayersAoERadius",
+        "MapUberModAOEPlayer"
+      ],
+      "Regex": "ss are",
+      "RawText": "Players have (15-25)% less Area of Effect"
+    },
+    "Players are Cursed with Enfeeble": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Players are Cursed with Enfeeble"
+      ],
+      "BaseMods": [
+        "MapPlayerCurseEnfeeblement2MapWorlds",
+        "MapPlayerEnfeeblement"
+      ],
+      "Regex": "eble$",
+      "RawText": "Players are Cursed with Enfeeble"
+    },
+    "Monsters have +# to Maximum Endurance Charges": {
+      "Type": "Uber",
+      "Descriptions": [
+        "Monsters have +# to Maximum Endurance Charges",
+        "Monsters gain an Endurance Charge when hit"
+      ],
+      "BaseMods": [
+        "MapUberModEnduranceCharges",
+        "MapMonstersEnduranceChargeOnHit"
+      ],
+      "Regex": "arge w",
+      "RawText": "Monsters have +1 to Maximum Endurance Charges|Monsters gain an Endurance Charge when hit"
+    },
+    "Area contains the Viridian Wildwood": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area contains the Viridian Wildwood"
+      ],
+      "BaseMods": [
+        "MapContainsWildwoodWorlds",
+        "Wildwood"
+      ],
+      "Regex": "viri",
+      "RawText": "Area contains the Viridian Wildwood"
+    },
+    "Area has patches of Shocked Ground which increase Damage taken by #%": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area has patches of Shocked Ground which increase Damage taken by #%"
+      ],
+      "BaseMods": [
+        "MapShockedGround3MapWorlds",
+        "MapGroundEffect"
+      ],
+      "Regex": "und w",
+      "RawText": "Area has patches of Shocked Ground which increase Damage taken by (20-50)%"
+    },
+    "#% increased Magic Monsters": {
+      "Type": "Generic",
+      "Descriptions": [
+        "#% increased Magic Monsters"
+      ],
+      "BaseMods": [
+        "MapBloodlinesModOnMagicsMapWorlds",
+        "MapBloodlinesModOnMagics"
+      ],
+      "Regex": "d mag",
+      "RawText": "(20-30)% increased Magic Monsters"
+    },
+    "Unique Monsters have a random Shrine Buff": {
+      "Type": "Uber",
+      "Descriptions": [
+        "Unique Monsters have a random Shrine Buff"
+      ],
+      "BaseMods": [],
+      "Regex": "ff$",
+      "RawText": "Unique Monsters have a random Shrine Buff"
+    },
+    "Players are Cursed with Vulnerability": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Players are Cursed with Vulnerability"
+      ],
+      "BaseMods": [
+        "MapUberModCurses",
+        "MapPlayerTemporalChains",
+        "MapPlayerVulnerability",
+        "MapPlayerElementalWeakness"
+      ],
+      "Regex": "h vu",
+      "RawText": "Players are Cursed with Vulnerability"
+    },
+    "Monsters cannot be Stunned": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Monsters cannot be Stunned",
+        "#% more Monster Life"
+      ],
+      "BaseMods": [
+        "MapUberModJuggernaut",
+        "MapMonstersCantBeSlowedOrTaunted"
+      ],
+      "Regex": "unned$",
+      "RawText": "Monsters cannot be Stunned|(15-30)% more Monster Life"
+    },
+    "Area contains Runes of the Searing Exarch": {
+      "Type": "Uber",
+      "Descriptions": [
+        "Area contains Runes of the Searing Exarch"
+      ],
+      "BaseMods": [
+        "MapUberModExarch"
+      ],
+      "Regex": "rch$",
+      "RawText": "Area contains Runes of the Searing Exarch"
+    },
+    "Area is inhabited by Sea Witches and their Spawn": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area is inhabited by Sea Witches and their Spawn"
+      ],
+      "BaseMods": [
+        "MapMonsterPacksSpawnsSeaWitchesMapWorlds",
+        "MapMonsterPacks"
+      ],
+      "Regex": "wn$",
+      "RawText": "Area is inhabited by Sea Witches and their Spawn"
+    },
+    "Area contains two Unique Bosses": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area contains two Unique Bosses"
+      ],
+      "BaseMods": [
+        "MapTwoBossesMapWorlds",
+        "MapTwoBosses"
+      ],
+      "Regex": "wo u",
+      "RawText": "Area contains two Unique Bosses"
+    },
+    "Rare monsters in area Temporarily Revive on death": {
+      "Type": "Uber",
+      "Descriptions": [
+        "Rare monsters in area Temporarily Revive on death"
+      ],
+      "BaseMods": [
+        "MapUberModRaresLastGasp"
+      ],
+      "Regex": "viv",
+      "RawText": "Rare monsters in area Temporarily Revive on death"
+    },
+    "Area is inhabited by Demons": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area is inhabited by Demons"
+      ],
+      "BaseMods": [
+        "MapMonsterPacksDemonsMapWorlds",
+        "MapMonsterPacks"
+      ],
+      "Regex": "mons$",
+      "RawText": "Area is inhabited by Demons"
+    },
+    "Monsters Poison on Hit": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Monsters Poison on Hit"
+      ],
+      "BaseMods": [
+        "MapUberModPoison",
+        "MapPoisoning"
+      ],
+      "Regex": "rs po",
+      "RawText": "Monsters Poison on Hit"
+    },
+    "Players are assaulted by Bloodstained Sawblades": {
+      "Type": "Uber",
+      "Descriptions": [
+        "Players are assaulted by Bloodstained Sawblades"
+      ],
+      "BaseMods": [
+        "MapUberModSawblades",
+        "MapUberModAmbush"
+      ],
+      "Regex": "wb",
+      "RawText": "Players are assaulted by Bloodstained Sawblades"
+    },
+    "Area has patches of Chilled Ground": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area has patches of Chilled Ground"
+      ],
+      "BaseMods": [
+        "MapChilledGroundSuffix3MapWorlds_",
+        "MapGroundEffect"
+      ],
+      "Regex": "s of ch",
+      "RawText": "Area has patches of Chilled Ground"
+    },
+    "Rare Monsters have Elemental Thorns reflecting # Elemental Damage": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Rare Monsters have Elemental Thorns reflecting # Elemental Damage"
+      ],
+      "BaseMods": [
+        "MapMonsterElementalReflection3MapWorlds",
+        "MapMonsterElementalReflection"
+      ],
+      "Regex": "\\d+ e",
+      "RawText": "Rare Monsters have Elemental Thorns reflecting (900-1500) Elemental Damage"
+    },
+    "Area is inhabited by Abominations": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area is inhabited by Abominations"
+      ],
+      "BaseMods": [
+        "MapMonsterPacksAbominationMapWorlds",
+        "MapMonsterPacks"
+      ],
+      "Regex": "ions$",
+      "RawText": "Area is inhabited by Abominations"
+    },
+    "Players have #% reduced effect of Non-Curse Auras from Skills": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Players have #% reduced effect of Non-Curse Auras from Skills"
+      ],
+      "BaseMods": [
+        "MapPlayersReducedAuraEffect3MapWorlds_",
+        "MapPlayerAuraEffect"
+      ],
+      "Regex": "ills$",
+      "RawText": "Players have (25-60)% reduced effect of Non-Curse Auras from Skills"
+    },
+    "Debuffs on Monsters expire #% faster": {
+      "Type": "Uber",
+      "Descriptions": [
+        "Debuffs on Monsters expire #% faster"
+      ],
+      "BaseMods": [
+        "MapUberModMonsterDebuffSpeed"
+      ],
+      "Regex": "^deb",
+      "RawText": "Debuffs on Monsters expire 100% faster"
+    },
+    "Players have #% reduced Maximum total Life, Mana and Energy Shield Recovery per second from Leech": {
+      "Type": "Uber",
+      "Descriptions": [
+        "Players have #% reduced Maximum total Life, Mana and Energy Shield Recovery per second from Leech"
+      ],
+      "BaseMods": [
+        "MapUberModLessPlayerLeech",
+        "MapMonsterLifeLeechImmunity"
+      ],
+      "Regex": "ech$",
+      "RawText": "Players have (50-60)% reduced Maximum total Life, Mana and Energy Shield Recovery per second from Leech"
+    },
+    "Area has patches of Burning Ground": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area has patches of Burning Ground"
+      ],
+      "BaseMods": [
+        "MapBurningGround3MapWorlds",
+        "MapGroundEffect"
+      ],
+      "Regex": "f bur",
+      "RawText": "Area has patches of Burning Ground"
+    },
+    "Monsters gain a Power Charge on Hit": {
+      "Type": "Uber",
+      "Descriptions": [
+        "Monsters gain a Power Charge on Hit",
+        "Monsters have +# to Maximum Power Charges"
+      ],
+      "BaseMods": [
+        "MapMonstersPowerChargeOnHitMapWorlds",
+        "MapMonstersPowerChargeOnHit",
+        "MapUberModPowerCharges"
+      ],
+      "Regex": "mum p",
+      "RawText": "Monsters gain a Power Charge on Hit|Monsters have +1 to Maximum Power Charges"
+    },
+    "Players cannot Regenerate Life, Mana or Energy Shield": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Players cannot Regenerate Life, Mana or Energy Shield"
+      ],
+      "BaseMods": [
+        "MapPlayerNoLifeESRegenMapWorlds",
+        "MapPlayerReducedRegen"
+      ],
+      "Regex": "t reg",
+      "RawText": "Players cannot Regenerate Life, Mana or Energy Shield"
+    },
+    "#% chance for Rare Monsters to Fracture on death": {
+      "Type": "Uber",
+      "Descriptions": [
+        "#% chance for Rare Monsters to Fracture on death"
+      ],
+      "BaseMods": [
+        "MapUberModRareFracture"
+      ],
+      "Regex": "frac",
+      "RawText": "25% chance for Rare Monsters to Fracture on death"
+    },
+    "Players are targeted by a Meteor when they use a Flask": {
+      "Type": "Uber",
+      "Descriptions": [
+        "Players are targeted by a Meteor when they use a Flask"
+      ],
+      "BaseMods": [
+        "MapUberModFlaskMeteor"
+      ],
+      "Regex": "teo",
+      "RawText": "Players are targeted by a Meteor when they use a Flask"
+    },
+    "Area is inhabited by Animals": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area is inhabited by Animals"
+      ],
+      "BaseMods": [
+        "MapMonsterPacksAnimalsMapWorlds",
+        "MapMonsterPacks"
+      ],
+      "Regex": "mals$",
+      "RawText": "Area is inhabited by Animals"
+    },
+    "Players cannot inflict Exposure": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Players cannot inflict Exposure"
+      ],
+      "BaseMods": [
+        "MapPlayerElementalEquilibriumMapWorlds",
+        "MapPlayerElementalEquilibrium"
+      ],
+      "Regex": "rs cannot i",
+      "RawText": "Players cannot inflict Exposure"
+    },
+    "Players have #% less Defences": {
+      "Type": "Uber",
+      "Descriptions": [
+        "Players have #% less Defences"
+      ],
+      "BaseMods": [
+        "MapUberModGlobalDefences"
+      ],
+      "Regex": "s def",
+      "RawText": "Players have (25-30)% less Defences"
+    },
+    "Monsters fire # additional Projectiles": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Monsters fire # additional Projectiles"
+      ],
+      "BaseMods": [
+        "MapMonsterMultipleProjectilesWorlds",
+        "MapMonsterMultipleProjectiles"
+      ],
+      "Regex": "tiles$",
+      "RawText": "Monsters fire 2 additional Projectiles"
+    },
+    "Area contains Labyrinth Hazards": {
+      "Type": "Uber",
+      "Descriptions": [
+        "Area contains Labyrinth Hazards"
+      ],
+      "BaseMods": [
+        "MapUberModLabyrinthHazards"
+      ],
+      "Regex": "haz",
+      "RawText": "Area contains Labyrinth Hazards"
+    },
+    "Monsters are Hexproof": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Monsters are Hexproof"
+      ],
+      "BaseMods": [
+        "MapHexproofMapWorlds",
+        "MapHexproof"
+      ],
+      "Regex": "re he",
+      "RawText": "Monsters are Hexproof"
+    },
+    "Players are Cursed with Temporal Chains": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Players are Cursed with Temporal Chains"
+      ],
+      "BaseMods": [
+        "MapPlayerCurseTemporalChains2MapWorlds",
+        "MapPlayerTemporalChains"
+      ],
+      "Regex": "h tem",
+      "RawText": "Players are Cursed with Temporal Chains"
+    },
+    "Rare Monsters have Volatile Cores": {
+      "Type": "Uber",
+      "Descriptions": [
+        "Rare Monsters have Volatile Cores"
+      ],
+      "BaseMods": [
+        "MapUberModVolatiles"
+      ],
+      "Regex": "res$",
+      "RawText": "Rare Monsters have Volatile Cores"
+    },
+    "Area is inhabited by Ghosts": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area is inhabited by Ghosts"
+      ],
+      "BaseMods": [
+        "MapMonsterPacksGhostsMapWorlds",
+        "MapMonsterPacks"
+      ],
+      "Regex": "sts$",
+      "RawText": "Area is inhabited by Ghosts"
+    },
+    "Monsters Hinder on Hit with Spells": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Monsters Hinder on Hit with Spells"
+      ],
+      "BaseMods": [
+        "MapMonstersHinderOnHitMapWorlds",
+        "MapMonstersHinderOnHit"
+      ],
+      "Regex": "ells$",
+      "RawText": "Monsters Hinder on Hit with Spells"
+    },
+    "The Maven interferes with Players": {
+      "Type": "Uber",
+      "Descriptions": [
+        "The Maven interferes with Players"
+      ],
+      "BaseMods": [
+        "MapUberModMavenFollower"
+      ],
+      "Regex": "rfe",
+      "RawText": "The Maven interferes with Players"
+    },
+    "Monsters deal #% extra Physical Damage as Cold": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Monsters deal #% extra Physical Damage as Cold"
+      ],
+      "BaseMods": [
+        "MapMonsterColdDamage3MapWorlds_",
+        "MapMonsterColdDamage"
+      ],
+      "Regex": "old$",
+      "RawText": "Monsters deal (50-110)% extra Physical Damage as Cold"
+    },
+    "Auras from Player Skills which affect Allies also affect Enemies": {
+      "Type": "Uber",
+      "Descriptions": [
+        "Auras from Player Skills which affect Allies also affect Enemies"
+      ],
+      "BaseMods": [
+        "MapUberModAurasAffectMonsters",
+        "MapUberModTreachery"
+      ],
+      "Regex": "^aur",
+      "RawText": "Auras from Player Skills which affect Allies also affect Enemies"
+    },
+    "Players are Cursed with Elemental Weakness": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Players are Cursed with Elemental Weakness"
+      ],
+      "BaseMods": [
+        "MapPlayerCurseElementalWeakness2MapWorlds",
+        "MapPlayerElementalWeakness"
+      ],
+      "Regex": "th el",
+      "RawText": "Players are Cursed with Elemental Weakness"
+    },
+    "Monsters have #% increased Area of Effect": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Monsters have #% increased Area of Effect"
+      ],
+      "BaseMods": [
+        "MapUberModProjAOE",
+        "MapMonsterMultipleProjectiles",
+        "MapMonsterAreaOfEffect"
+      ],
+      "Regex": "e \\d+% increased ar",
+      "RawText": "Monsters have (45-100)% increased Area of Effect"
+    },
+    "Area contains an Evocator of Ghorr": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area contains an Evocator of Ghorr"
+      ],
+      "BaseMods": [
+        "MapContainsBeyond",
+        "MapContainsBeyondFleshFactionWorlds"
+      ],
+      "Regex": "or of g",
+      "RawText": "Area contains an Evocator of Ghorr"
+    },
+    "Area contains patches of moving Marked Ground, inflicting random Marks": {
+      "Type": "Uber",
+      "Descriptions": [
+        "Area contains patches of moving Marked Ground, inflicting random Marks"
+      ],
+      "BaseMods": [
+        "MapUberModPlayerMarked",
+        "MapUberModPlayerMarks"
+      ],
+      "Regex": "rks",
+      "RawText": "Area contains patches of moving Marked Ground, inflicting random Marks"
+    },
+    "All Monster Damage from Hits always Ignites": {
+      "Type": "Generic",
+      "Descriptions": [
+        "All Monster Damage from Hits always Ignites"
+      ],
+      "BaseMods": [
+        "MapMonstersAllDamageAlwaysIgnitesMapWorlds_",
+        "MapMonstersAllDamageAlwaysIgnites"
+      ],
+      "Regex": "tes$",
+      "RawText": "All Monster Damage from Hits always Ignites"
+    },
+    "Monsters' Action Speed cannot be modified to below Base Value": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Monsters' Action Speed cannot be modified to below Base Value",
+        "Monsters' Movement Speed cannot be modified to below Base Value",
+        "Monsters cannot be Taunted"
+      ],
+      "BaseMods": [
+        "MapMonstersCantBeSlowedOrTauntedMapWorlds_",
+        "MapMonstersCantBeSlowedOrTaunted"
+      ],
+      "Regex": "taunte",
+      "RawText": "Monsters' Action Speed cannot be modified to below Base Value|Monsters' Movement Speed cannot be modified to below Base Value|Monsters cannot be Taunted"
+    },
+    "Monsters Blind on Hit": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Monsters Blind on Hit"
+      ],
+      "BaseMods": [
+        "MapMonstersBlindOnHitMapWorlds",
+        "MapMonstersBlindOnHit"
+      ],
+      "Regex": "rs b",
+      "RawText": "Monsters Blind on Hit"
+    },
+    "Monsters deal #% extra Physical Damage as Lightning": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Monsters deal #% extra Physical Damage as Lightning"
+      ],
+      "BaseMods": [
+        "MapMonsterLightningDamage3MapWorlds",
+        "MapMonsterLightningDamage"
+      ],
+      "Regex": "as li",
+      "RawText": "Monsters deal (50-110)% extra Physical Damage as Lightning"
+    },
+    "Players have (-#\u2014-#)% to all maximum Resistances": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Players have (-#\u2014-#)% to all maximum Resistances"
+      ],
+      "BaseMods": [
+        "MapPlayerMaxResists2MapWorlds",
+        "MapPlayerMaxResists"
+      ],
+      "Regex": "",
+      "RawText": "Players have (-12\u2014-9)% to all maximum Resistances"
+    },
+    "Monsters have +# to Maximum Frenzy Charges": {
+      "Type": "Uber",
+      "Descriptions": [
+        "Monsters have +# to Maximum Frenzy Charges",
+        "Monsters gain a Frenzy Charge on Hit",
+        "#% more Maps found in Area"
+      ],
+      "BaseMods": [
+        "MapUberModFrenzyCharges",
+        "MapMonstersFrenzyChargeOnHit"
+      ],
+      "Regex": "",
+      "RawText": "Monsters have +1 to Maximum Frenzy Charges"
+    },
+    "Unique Monsters have # random Shrine Buffs": {
+      "Type": "Uber",
+      "Descriptions": [
+        "Unique Monsters have # random Shrine Buffs",
+        "#% more Maps found in Area"
+      ],
+      "BaseMods": [
+        "MapUberModShrineBuff"
+      ],
+      "Regex": "",
+      "RawText": "Unique Monsters have 1 random Shrine Buffs"
+    },
+    "Area contains an Evocator of Beidat (Beyond Pale)": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area contains an Evocator of Beidat"
+      ],
+      "BaseMods": [
+        "MapContainsBeyond",
+        "MapContainsBeyondPaleFactionWorlds",
+        "Beyond"
+      ],
+      "Regex": "r of [bkg]",
+      "RawText": "Area contains an Evocator of Beidat"
+    },
+    "Area contains an Evocator of Ghorr (Beyond Flesh)": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area contains an Evocator of Ghorr"
+      ],
+      "BaseMods": [
+        "MapContainsBeyond",
+        "MapContainsBeyondFleshFactionWorlds",
+        "Beyond"
+      ],
+      "Regex": "r of [bkg]",
+      "RawText": "Area contains an Evocator of Ghorr"
+    },
+    "Area contains an Evocator of K'Tash (Beyond Demon)": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Area contains an Evocator of K'Tash"
+      ],
+      "BaseMods": [
+        "MapContainsBeyond",
+        "MapContainsBeyondDemonFactionWorlds",
+        "Beyond"
+      ],
+      "Regex": "r of [bkg]",
+      "RawText": "Area contains an Evocator of K'Tash"
+    },
+    "Slaying Enemies close together can attract monsters from Beyond": {
+      "Type": "Generic",
+      "Descriptions": [
+        "Slaying Enemies close together can attract monsters from Beyond"
+      ],
+      "BaseMods": [
+        "MapBeyond",
+        "Beyond"
+      ],
+      "Regex": "r of [bkg]",
+      "RawText": "Slaying Enemies close together can attract monsters from Beyond"
+    }
+  }
+}

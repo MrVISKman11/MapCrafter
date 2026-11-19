@@ -1,0 +1,17 @@
+# Build outputs
+bin/
+obj/
+*.dll
+*.dll.old
+*.dll.old_*
+*.pdb
+
+# IDE / Editor files
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Logs and runtime artifacts
+*.log
+crafting.log
