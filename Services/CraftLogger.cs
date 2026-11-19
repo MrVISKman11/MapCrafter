@@ -27,7 +27,7 @@ namespace MapCrafter.Services
         private static string _logFilePath = string.Empty;
         private const int MaxEntries = 600;
 
-        public static bool EnableFileLogging { get; set; } = true;
+        public static bool EnableFileLogging { get; set; } = false;
 
         public static void Initialize(string pluginDir, bool enableFileLogging = true)
         {

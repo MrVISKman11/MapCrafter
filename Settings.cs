@@ -25,7 +25,7 @@ namespace MapCrafter
         public ToggleNode PlaySoundOnCompletion { get; set; } = new(true);
 
         [Menu("Enable File Logging", "Write detailed crafting logs to crafting.log", 103, 100)]
-        public ToggleNode EnableFileLogging { get; set; } = new(true);
+        public ToggleNode EnableFileLogging { get; set; } = new(false);
 
         [Menu("Interface & Visuals", 200)]
         public EmptyNode VisualsHeader { get; set; } = new();
