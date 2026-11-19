@@ -62,22 +62,27 @@ namespace MapCrafter.Services
                 }
             }
 
-            // 3. Stat Filters
-            if (profile.MinQuantity > 0 && map.Quantity < profile.MinQuantity)
-                return EvaluationResult.Fail($"Quantity {map.Quantity}% < {profile.MinQuantity}%");
+            // 3. Minimum Stat Threshold Filters (0 = disabled / any)
+            if (profile.MinAtlasDrops > 0 && map.AtlasDrops < profile.MinAtlasDrops)
+                return EvaluationResult.Fail($"Atlas Drops {map.AtlasDrops}% < min {profile.MinAtlasDrops}%");
 
             if (profile.MinPackSize > 0 && map.PackSize < profile.MinPackSize)
-                return EvaluationResult.Fail($"Pack Size {map.PackSize}% < {profile.MinPackSize}%");
+                return EvaluationResult.Fail($"Monster Pack Size {map.PackSize}% < min {profile.MinPackSize}%");
 
-            // Currency stat limits (e.g. currency < 50)
-            if (profile.MaxCurrencyStat > 0 && map.CurrencyBonus >= profile.MaxCurrencyStat)
-                return EvaluationResult.Fail($"Currency bonus {map.CurrencyBonus}% >= max {profile.MaxCurrencyStat}%");
+            if (profile.MinItemRarity > 0 && map.ItemRarityBonus < profile.MinItemRarity)
+                return EvaluationResult.Fail($"Item Rarity {map.ItemRarityBonus}% < min {profile.MinItemRarity}%");
 
-            if (profile.MinCurrencyStat > 0 && map.CurrencyBonus < profile.MinCurrencyStat)
-                return EvaluationResult.Fail($"Currency bonus {map.CurrencyBonus}% < min {profile.MinCurrencyStat}%");
+            if (profile.MinMoreMaps > 0 && map.MoreMapsBonus < profile.MinMoreMaps)
+                return EvaluationResult.Fail($"More Maps {map.MoreMapsBonus}% < min {profile.MinMoreMaps}%");
 
-            if (profile.MinScarabsStat > 0 && map.ScarabsBonus < profile.MinScarabsStat)
-                return EvaluationResult.Fail($"Scarabs bonus {map.ScarabsBonus}% < min {profile.MinScarabsStat}%");
+            if (profile.MinMoreCurrency > 0 && map.CurrencyBonus < profile.MinMoreCurrency)
+                return EvaluationResult.Fail($"More Currency {map.CurrencyBonus}% < min {profile.MinMoreCurrency}%");
+
+            if (profile.MinMoreThreads > 0 && map.ScarabsBonus < profile.MinMoreThreads)
+                return EvaluationResult.Fail($"More Threads {map.ScarabsBonus}% < min {profile.MinMoreThreads}%");
+
+            if (profile.MinItemQuantity > 0 && map.ItemQuantity < profile.MinItemQuantity)
+                return EvaluationResult.Fail($"Item Quantity {map.ItemQuantity}% < min {profile.MinItemQuantity}%");
 
             // 4. Custom Regex check (poe.re style)
             if (!string.IsNullOrWhiteSpace(profile.CustomRegex))

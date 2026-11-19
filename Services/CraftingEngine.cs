@@ -117,7 +117,7 @@ namespace MapCrafter.Services
             for (int i = 0; i < mapsSnapshot.Count; i++)
             {
                 var m = mapsSnapshot[i];
-                CraftLogger.Info("SCAN", $"  Map #{i + 1}: ({m.SlotX},{m.SlotY}) {m.BaseName} T{m.Tier} Q:{m.Quality}% Rarity:{m.Rarity} Mods:{m.ModCount}");
+                CraftLogger.Info("SCAN", $"  Map #{i + 1}: ({m.SlotX},{m.SlotY}) {m.BaseName} T{m.Tier} Q:{m.Quality}% Quant:{m.ItemQuantity}% Atlas:{m.AtlasDrops}% Rarity:+{m.ItemRarityBonus}% PS:{m.PackSize}% Maps:+{m.MoreMapsBonus}% Cur:+{m.CurrencyBonus}% Threads:+{m.ScarabsBonus}%");
             }
 
             if (mapsSnapshot.Count == 0)
@@ -189,7 +189,7 @@ namespace MapCrafter.Services
                 map.Status = CraftStatus.Rerolling;
                 CraftLogger.Step("SESSION", $"==================================================");
                 CraftLogger.Step("SESSION", $"STARTING MAP #{craftedCount}/{mapsSnapshot.Count} at ({map.SlotX},{map.SlotY}) [{map.BaseName} T{map.Tier}]");
-                CraftLogger.Step("SESSION", $"Initial: Quality={map.Quality}%, Rarity={map.Rarity}, ModCount={map.ModCount}, Quant={map.Quantity}%, PackSize={map.PackSize}%");
+                CraftLogger.Step("SESSION", $"Initial Stats: Quality={map.Quality}%, ItemQuant={map.ItemQuantity}%, AtlasDrops={map.AtlasDrops}%, Rarity=+{map.ItemRarityBonus}%, PackSize={map.PackSize}%" + (map.CurrencyBonus > 0 ? $", Cur=+{map.CurrencyBonus}%" : "") + (map.ScarabsBonus > 0 ? $", Threads=+{map.ScarabsBonus}%" : "") + (map.MoreMapsBonus > 0 ? $", Maps=+{map.MoreMapsBonus}%" : ""));
 
                 bool mapFinished = await ProcessSingleMap(gc, map, profile, settings, delay, ct, ignoredSlots);
                 CraftLogger.Info("SESSION", $"FINISHED MAP #{craftedCount}: Success={mapFinished}, FinalStatus={map.Status}, Details='{map.StatusDetails}'");
@@ -447,7 +447,7 @@ namespace MapCrafter.Services
                             int prevModCount = map.ModCount;
                             int prevQ = map.Quality;
                             ItemRarity prevR = map.Rarity;
-                            int prevQuant = map.Quantity;
+                            int prevAtlas = map.AtlasDrops;
                             int prevPackSize = map.PackSize;
                             var prevMods = map.RawModNames.ToList();
 
@@ -455,7 +455,7 @@ namespace MapCrafter.Services
                             await CrafterInput.LeftClickInPlace(delay);
 
                             // Wait for map to update in memory
-                            var refreshed = await WaitForMapChange(gc, map.SlotX, map.SlotY, prevQ, prevR, prevModCount, prevQuant, prevPackSize, prevMods, timeoutMs: 800, expectedClickPos: map.ClickPosition);
+                            var refreshed = await WaitForMapChange(gc, map.SlotX, map.SlotY, prevQ, prevR, prevModCount, prevAtlas, prevPackSize, prevMods, timeoutMs: 800, expectedClickPos: map.ClickPosition);
                             if (refreshed != null)
                             {
                                 UpdateMapData(map, refreshed);
@@ -469,6 +469,7 @@ namespace MapCrafter.Services
                             // Evaluate updated map
                             var innerEval = MapEvaluator.Evaluate(map, profile);
                             CraftLogger.Info("EVAL", $"Attempt #{map.AttemptsUsed} Evaluation: Passed={innerEval.Passed} | Reason: '{innerEval.Reason}'");
+                            CraftLogger.Info("EVAL", $"Current stats: ItemQuant={map.ItemQuantity}% AtlasDrops={map.AtlasDrops}% Rarity=+{map.ItemRarityBonus}% PackSize={map.PackSize}% Maps=+{map.MoreMapsBonus}% Cur=+{map.CurrencyBonus}% Threads=+{map.ScarabsBonus}%");
                             CraftLogger.Info("EVAL", $"Current mods ({map.ModCount}): [{string.Join(" | ", map.ModLines)}]");
 
                             if (innerEval.Passed)
@@ -572,7 +573,7 @@ namespace MapCrafter.Services
                 }
 
                 map.Status = CraftStatus.Succeeded;
-                map.StatusDetails = $"Passed in {map.AttemptsUsed} attempts (Q:{map.Quality}% PS:{map.PackSize}%)";
+                map.StatusDetails = $"Passed in {map.AttemptsUsed} attempts (Q:{map.Quality}% Quant:{map.ItemQuantity}% Atlas:{map.AtlasDrops}% Rar:+{map.ItemRarityBonus}% PS:{map.PackSize}%)";
                 CraftLogger.Success("SESSION", $"Map crafting SUCCESS: {map.StatusDetails}");
                 return (true, false);
             }
@@ -625,7 +626,7 @@ namespace MapCrafter.Services
 
                 map.ExaltsUsed++;
 
-                var refreshed = await WaitForMapChange(gc, map.SlotX, map.SlotY, map.Quality, map.Rarity, prevModCount, map.Quantity, map.PackSize, prevMods, timeoutMs: 1000);
+                var refreshed = await WaitForMapChange(gc, map.SlotX, map.SlotY, map.Quality, map.Rarity, prevModCount, map.AtlasDrops, map.PackSize, prevMods, timeoutMs: 1000);
                 if (refreshed != null)
                 {
                     UpdateMapData(map, refreshed);
@@ -695,7 +696,7 @@ namespace MapCrafter.Services
             int prevQuality,
             ItemRarity prevRarity,
             int prevModCount,
-            int prevQuantity = -1,
+            int prevAtlasDrops = -1,
             int prevPackSize = -1,
             List<string>? prevModNames = null,
             int timeoutMs = 700,
@@ -713,13 +714,13 @@ namespace MapCrafter.Services
                     bool changed = last.Quality != prevQuality ||
                                    last.Rarity != prevRarity ||
                                    last.ModCount != prevModCount ||
-                                   (prevQuantity >= 0 && last.Quantity != prevQuantity) ||
+                                   (prevAtlasDrops >= 0 && last.AtlasDrops != prevAtlasDrops) ||
                                    (prevPackSize >= 0 && last.PackSize != prevPackSize) ||
                                    (prevModNames != null && !last.RawModNames.SequenceEqual(prevModNames));
 
                     if (changed)
                     {
-                        CraftLogger.Info("CONFIRM", $"Confirmed change in {sw.ElapsedMilliseconds}ms (Q:{prevQuality}->{last.Quality}, R:{prevRarity}->{last.Rarity}, Mods:{prevModCount}->{last.ModCount}, Quant:{last.Quantity}%, PS:{last.PackSize}%)");
+                        CraftLogger.Info("CONFIRM", $"Confirmed change in {sw.ElapsedMilliseconds}ms (Q:{prevQuality}->{last.Quality}, R:{prevRarity}->{last.Rarity}, Mods:{prevModCount}->{last.ModCount}, Atlas:{last.AtlasDrops}%, PS:{last.PackSize}%, Rar:+{last.ItemRarityBonus}%)");
                         return last;
                     }
                 }
@@ -788,8 +789,11 @@ namespace MapCrafter.Services
             target.ModCount = source.ModCount;
             target.PrefixCount = source.PrefixCount;
             target.SuffixCount = source.SuffixCount;
-            target.Quantity = source.Quantity;
+            target.ItemQuantity = source.ItemQuantity;
+            target.AtlasDrops = source.AtlasDrops;
+            target.ItemRarityBonus = source.ItemRarityBonus;
             target.PackSize = source.PackSize;
+            target.MoreMapsBonus = source.MoreMapsBonus;
             target.CurrencyBonus = source.CurrencyBonus;
             target.ScarabsBonus = source.ScarabsBonus;
             target.ModLines = source.ModLines;

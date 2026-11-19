@@ -1,0 +1,31 @@
+{
+  "Name": "Mirage Maps",
+  "ChiselMaps": true,
+  "ChiselNormal": true,
+  "TargetQuality": 20,
+  "Method": 0,
+  "ExaltSlam": true,
+  "MaxExaltsToApply": 2,
+  "VaalSetting": 0,
+  "MaxAttemptsPerMap": 600,
+  "MinAtlasDrops": 0,
+  "MinItemRarity": 0,
+  "MinPackSize": 0,
+  "MinMoreMaps": 0,
+  "MinMoreCurrency": 0,
+  "MinMoreThreads": 0,
+  "MinItemQuantity": 0,
+  "MinQuantity": 0,
+  "MinCurrencyStat": 0,
+  "MinScarabsStat": 0,
+  "MinMapsBonus": 0,
+  "CustomRegex": "",
+  "BannedMods": [
+    "Players cannot Regenerate Life, Mana or Energy Shield",
+    "Players have #% less effect of Flasks applied to them"
+  ],
+  "RequiredMods": [
+    "Area contains a Mirage"
+  ],
+  "RequireAllRequiredMods": false
+}

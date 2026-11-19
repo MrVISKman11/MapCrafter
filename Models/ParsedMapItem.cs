@@ -42,10 +42,16 @@ namespace MapCrafter.Models
         public int PrefixCount { get; set; }
         public int SuffixCount { get; set; }
 
-        public int Quantity { get; set; }
+        // Core 3.30 Map Yield & Scaling Modifiers
+        public int ItemQuantity { get; set; }
+        public int Quantity { get => ItemQuantity; set => ItemQuantity = value; } // Alias for backwards compatibility
+        public int AtlasDrops { get; set; }
+        public int ItemRarityBonus { get; set; }
         public int PackSize { get; set; }
+        public int MoreMapsBonus { get; set; }
         public int CurrencyBonus { get; set; }
         public int ScarabsBonus { get; set; }
+        public int MoreThreadsBonus { get => ScarabsBonus; set => ScarabsBonus = value; }
 
         public List<string> ModLines { get; set; } = new();
         public List<string> RawModNames { get; set; } = new();

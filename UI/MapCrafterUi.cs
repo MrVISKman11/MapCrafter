@@ -28,7 +28,24 @@ namespace MapCrafter.UI
         private readonly string[] _methodOptions = { "Chaos Orb", "Scour + Alch" };
         private readonly string[] _vaalOptions = { "Never", "On Craft Success", "All Inventory Maps (Unconditional)" };
 
-        private static string Escape(string text) => text?.Replace("%", "%%") ?? string.Empty;
+        private static void SafeText(string text)
+        {
+            ImGui.TextUnformatted(text ?? string.Empty);
+        }
+
+        private static void SafeTextColored(Vector4 color, string text)
+        {
+            ImGui.PushStyleColor(ImGuiCol.Text, color);
+            ImGui.TextUnformatted(text ?? string.Empty);
+            ImGui.PopStyleColor();
+        }
+
+        private static void SafeTextDisabled(string text)
+        {
+            ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.6f, 0.6f, 0.6f, 1f));
+            ImGui.TextUnformatted(text ?? string.Empty);
+            ImGui.PopStyleColor();
+        }
 
         public void Render(GameController gc, CraftingEngine engine, List<CraftingProfile> profiles, Settings settings, HashSet<(int x, int y)> ignoredSlots, string pluginDir)
         {
@@ -92,10 +109,10 @@ namespace MapCrafter.UI
         private void RenderHeader(GameController gc, CraftingEngine engine, List<CraftingProfile> profiles, Settings settings, HashSet<(int x, int y)> ignoredSlots)
         {
             var statusColor = engine.IsRunning ? new Vector4(0.2f, 1f, 0.2f, 1f) : new Vector4(1f, 0.4f, 0.4f, 1f);
-            ImGui.TextColored(statusColor, engine.IsRunning ? "[RUNNING] Crafting Active" : "[IDLE] Ready");
+            SafeTextColored(statusColor, engine.IsRunning ? "[RUNNING] Crafting Active" : "[IDLE] Ready");
 
             ImGui.SameLine();
-            ImGui.TextDisabled($"| Status: {engine.StatusMessage}");
+            SafeTextDisabled($"| Status: {engine.StatusMessage}");
 
             // Persistent Profile Switcher in the Header (visible across all tabs!)
             if (profiles.Count > 0)
@@ -104,7 +121,7 @@ namespace MapCrafter.UI
                 if (_selectedProfileIndex >= profileNames.Length) _selectedProfileIndex = 0;
 
                 ImGui.Spacing();
-                ImGui.TextColored(new Vector4(1f, 0.85f, 0.2f, 1f), "Profile:");
+                SafeTextColored(new Vector4(1f, 0.85f, 0.2f, 1f), "Profile:");
                 ImGui.SameLine();
                 ImGui.SetNextItemWidth(320);
                 if (ImGui.Combo("##HeaderProfileSelector", ref _selectedProfileIndex, profileNames, profileNames.Length))
@@ -112,7 +129,7 @@ namespace MapCrafter.UI
                     settings.ActiveProfileName.Value = profileNames[_selectedProfileIndex];
                 }
                 ImGui.SameLine();
-                ImGui.TextDisabled($"({_selectedProfileIndex + 1}/{profiles.Count})");
+                SafeTextDisabled($"({_selectedProfileIndex + 1}/{profiles.Count})");
             }
 
             ImGui.Spacing();
@@ -149,10 +166,10 @@ namespace MapCrafter.UI
             }
 
             ImGui.SameLine();
-            ImGui.TextDisabled($"(Found {engine.Tracker.MapCount} maps in inv)");
+            SafeTextDisabled($"(Found {engine.Tracker.MapCount} maps in inv)");
 
             var curSummary = engine.Tracker.GetCurrencySummary();
-            ImGui.TextColored(new Vector4(0.35f, 0.75f, 1f, 1f), $"Currencies: {curSummary}");
+            SafeTextColored(new Vector4(0.35f, 0.75f, 1f, 1f), $"Currencies: {curSummary}");
         }
 
         private void RenderStrategyTab(CraftingEngine engine, List<CraftingProfile> profiles, Settings settings, string pluginDir)
@@ -286,27 +303,36 @@ namespace MapCrafter.UI
             if (profiles.Count == 0 || _selectedProfileIndex >= profiles.Count) return;
             var current = profiles[_selectedProfileIndex];
 
-            ImGui.TextColored(new Vector4(0.4f, 0.9f, 1f, 1f), "Stat Thresholds");
+            ImGui.TextColored(new Vector4(0.4f, 0.9f, 1f, 1f), "Minimum Stat Thresholds (0 = disabled / any)");
+            ImGui.TextDisabled("MapCrafter rerolls maps until all non-zero minimum stat thresholds are satisfied.");
 
-            int minQ = current.MinQuantity;
-            if (ImGui.SliderInt("Min Quantity (Atlas Drops) %", ref minQ, 0, 300))
-                current.MinQuantity = minQ;
+            int minAtlas = current.MinAtlasDrops;
+            if (ImGui.SliderInt("Min Atlas Drops %", ref minAtlas, 0, 300))
+                current.MinAtlasDrops = minAtlas;
 
             int minPs = current.MinPackSize;
-            if (ImGui.SliderInt("Min Pack Size %", ref minPs, 0, 100))
+            if (ImGui.SliderInt("Min Monster Pack Size %", ref minPs, 0, 100))
                 current.MinPackSize = minPs;
 
-            int maxCur = current.MaxCurrencyStat;
-            if (ImGui.SliderInt("Max Currency % (e.g. 50 for currency < 50, 0 = disabled)", ref maxCur, 0, 500))
-                current.MaxCurrencyStat = maxCur;
+            int minRarity = current.MinItemRarity;
+            if (ImGui.SliderInt("Min Item Rarity %", ref minRarity, 0, 300))
+                current.MinItemRarity = minRarity;
 
-            int minCur = current.MinCurrencyStat;
-            if (ImGui.SliderInt("Min Currency % (0 = disabled)", ref minCur, 0, 500))
-                current.MinCurrencyStat = minCur;
+            int minMaps = current.MinMoreMaps;
+            if (ImGui.SliderInt("Min More Maps %", ref minMaps, 0, 500))
+                current.MinMoreMaps = minMaps;
 
-            int minScarabs = current.MinScarabsStat;
-            if (ImGui.SliderInt("Min Scarabs / Threads % (0 = disabled)", ref minScarabs, 0, 500))
-                current.MinScarabsStat = minScarabs;
+            int minCur = current.MinMoreCurrency;
+            if (ImGui.SliderInt("Min More Currency %", ref minCur, 0, 500))
+                current.MinMoreCurrency = minCur;
+
+            int minThreads = current.MinMoreThreads;
+            if (ImGui.SliderInt("Min More Threads %", ref minThreads, 0, 500))
+                current.MinMoreThreads = minThreads;
+
+            int minQuant = current.MinItemQuantity;
+            if (ImGui.SliderInt("Min Item Quantity % (Chisel / Quality)", ref minQuant, 0, 100))
+                current.MinItemQuantity = minQuant;
 
             ImGui.Separator();
             ImGui.TextColored(new Vector4(0.4f, 0.9f, 1f, 1f), "PoE Regex (poe.re compatible)");
@@ -468,27 +494,27 @@ namespace MapCrafter.UI
 
                         ImGui.SameLine();
                         var catColor = mod.Category == "Uber" ? new Vector4(1f, 0.5f, 0.2f, 1f) : new Vector4(0.8f, 0.8f, 0.8f, 1f);
-                        ImGui.TextColored(catColor, $"[{mod.Category}] ");
+                        SafeTextColored(catColor, $"[{mod.Category}] ");
 
                         if (!string.IsNullOrEmpty(mod.Regex))
                         {
                             ImGui.SameLine();
-                            ImGui.TextColored(new Vector4(0.6f, 0.8f, 1f, 1f), $"[{mod.Regex}] ");
+                            SafeTextColored(new Vector4(0.6f, 0.8f, 1f, 1f), $"[{mod.Regex}] ");
                         }
 
                         ImGui.SameLine();
-                        ImGui.TextUnformatted(mod.Name);
+                        SafeText(mod.Name);
 
                         if (ImGui.IsItemHovered())
                         {
                             ImGui.BeginTooltip();
                             if (!string.IsNullOrEmpty(mod.Regex))
-                                ImGui.TextColored(new Vector4(0.6f, 0.8f, 1f, 1f), $"poe.re Regex: \"{mod.Regex}\"");
+                                SafeTextColored(new Vector4(0.6f, 0.8f, 1f, 1f), $"poe.re Regex: \"{mod.Regex}\"");
                             if (mod.Descriptions.Count > 0)
                             {
-                                ImGui.TextUnformatted("Descriptions / Stats:");
+                                SafeText("Descriptions / Stats:");
                                 foreach (var d in mod.Descriptions)
-                                    ImGui.TextDisabled($" * {Escape(d)}");
+                                    SafeTextDisabled($" * {d}");
                             }
                             ImGui.EndTooltip();
                         }
@@ -589,24 +615,26 @@ namespace MapCrafter.UI
                     if (ImGui.IsItemHovered())
                     {
                         ImGui.BeginTooltip();
-                        ImGui.Text($"Slot ({x}, {y})");
+                        SafeText($"Slot ({x}, {y})");
                         if (isIgnored)
-                            ImGui.TextColored(new Vector4(0.8f, 0.3f, 0.8f, 1f), "IGNORED (Click to unignore)");
+                            SafeTextColored(new Vector4(0.8f, 0.3f, 0.8f, 1f), "IGNORED (Click to unignore)");
                         else if (currencyBySlot.TryGetValue((x, y), out var c))
-                            ImGui.Text($"Currency: {c.BaseName} (x{c.StackCount})");
+                            SafeText($"Currency: {c.BaseName} (x{c.StackCount})");
                         else if (mapsBySlot.TryGetValue((x, y), out var m))
                         {
-                            ImGui.Text($"Map: {m.BaseName} [Tier {m.Tier}]");
-                            ImGui.Text($"Status: {m.Status} - {m.StatusDetails}");
-                            ImGui.Text($"Quality: {m.Quality}% | Quant: {m.Quantity}% | Pack Size: {m.PackSize}%");
-                            if (m.CurrencyBonus > 0) ImGui.Text($"Currency Bonus: +{m.CurrencyBonus}%");
-                            if (m.ScarabsBonus > 0) ImGui.Text($"Scarabs Bonus: +{m.ScarabsBonus}%");
+                            SafeText($"Map: {m.BaseName} [Tier {m.Tier}]");
+                            SafeText($"Status: {m.Status} - {m.StatusDetails}");
+                            SafeText($"Quality: +{m.Quality}% | Item Quantity: +{m.ItemQuantity}% | Atlas Drops: +{m.AtlasDrops}%");
+                            SafeText($"Item Rarity: +{m.ItemRarityBonus}% | Pack Size: +{m.PackSize}%");
+                            if (m.MoreMapsBonus > 0) SafeText($"More Maps: +{m.MoreMapsBonus}%");
+                            if (m.CurrencyBonus > 0) SafeText($"More Currency: +{m.CurrencyBonus}%");
+                            if (m.ScarabsBonus > 0) SafeText($"More Threads: +{m.ScarabsBonus}%");
                             ImGui.Separator();
                             foreach (var line in m.ModLines)
-                                ImGui.TextDisabled(Escape(line));
+                                SafeTextDisabled(line);
                         }
                         else
-                            ImGui.TextDisabled("Empty or non-craftable item");
+                            SafeTextDisabled("Empty or non-craftable item");
                         ImGui.EndTooltip();
                     }
 
@@ -662,7 +690,7 @@ namespace MapCrafter.UI
                         _ => new Vector4(0.85f, 0.85f, 0.85f, 1f)
                     };
 
-                    ImGui.TextColored(color, entry.Formatted);
+                    SafeTextColored(color, entry.Formatted);
                 }
 
                 if (_autoScrollLog && ImGui.GetScrollY() >= ImGui.GetScrollMaxY() - 20)

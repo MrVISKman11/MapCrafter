@@ -19,14 +19,20 @@ namespace MapCrafter.Models
         public VaalMode VaalSetting { get; set; } = VaalMode.Never;
         public int MaxAttemptsPerMap { get; set; } = 80;
 
-        // Stat Filters
-        public int MinQuantity { get; set; } = 0;
+        // Core 3.30 Minimum Stat Thresholds (0 = disabled / any) - NO max caps!
+        public int MinAtlasDrops { get; set; } = 0;
+        public int MinItemRarity { get; set; } = 0;
         public int MinPackSize { get; set; } = 0;
-        
-        // Specific Stat Filters (e.g. T17 maps or special implicits/explicits)
-        public int MaxCurrencyStat { get; set; } = 0; // 0 = disabled. If > 0, e.g. currency < 50
-        public int MinCurrencyStat { get; set; } = 0;
-        public int MinScarabsStat { get; set; } = 0;
+        public int MinMoreMaps { get; set; } = 0;
+        public int MinMoreCurrency { get; set; } = 0;
+        public int MinMoreThreads { get; set; } = 0;
+        public int MinItemQuantity { get; set; } = 0;
+
+        // Backwards compatibility aliases for existing profile JSONs
+        public int MinQuantity { get => MinAtlasDrops > 0 ? MinAtlasDrops : MinItemQuantity; set => MinAtlasDrops = value; }
+        public int MinCurrencyStat { get => MinMoreCurrency; set => MinMoreCurrency = value; }
+        public int MinScarabsStat { get => MinMoreThreads; set => MinMoreThreads = value; }
+        public int MinMapsBonus { get => MinMoreMaps; set => MinMoreMaps = value; }
 
         // Regex Support (poe.re compatible)
         public string CustomRegex { get; set; } = string.Empty;
@@ -48,11 +54,13 @@ namespace MapCrafter.Models
                 MaxExaltsToApply = this.MaxExaltsToApply,
                 VaalSetting = this.VaalSetting,
                 MaxAttemptsPerMap = this.MaxAttemptsPerMap,
-                MinQuantity = this.MinQuantity,
+                MinAtlasDrops = this.MinAtlasDrops,
+                MinItemRarity = this.MinItemRarity,
                 MinPackSize = this.MinPackSize,
-                MaxCurrencyStat = this.MaxCurrencyStat,
-                MinCurrencyStat = this.MinCurrencyStat,
-                MinScarabsStat = this.MinScarabsStat,
+                MinMoreMaps = this.MinMoreMaps,
+                MinMoreCurrency = this.MinMoreCurrency,
+                MinMoreThreads = this.MinMoreThreads,
+                MinItemQuantity = this.MinItemQuantity,
                 CustomRegex = this.CustomRegex,
                 BannedMods = new List<string>(this.BannedMods),
                 RequiredMods = new List<string>(this.RequiredMods),

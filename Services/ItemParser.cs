@@ -21,10 +21,13 @@ namespace MapCrafter.Services
         private static readonly Regex CamelCaseSplitRegex = new(@"([A-Z])", RegexOptions.Compiled);
         private static readonly Regex ExtraSpacesRegex = new(@"\s+", RegexOptions.Compiled);
 
-        private static readonly string[] PackSizeStatKeys = { "map_pack_size", "map_monster_pack_size", "map_total_pack_size" };
-        private static readonly string[] AtlasDropsStatKeys = { "map_item_drop_quantity", "map_drop_scaling", "map_item_quantity", "map_total_item_quantity" };
-        private static readonly string[] MoreCurrencyStatKeys = { "map_currency_drop_chance" };
         private static readonly string[] MoreThreadsStatKeys = { "map_scarab_drop_chance" }; // 3.30 Threads stat key kept its old internal name
+        private static readonly string[] MoreCurrencyStatKeys = { "map_currency_drop_chance" };
+        private static readonly string[] MoreMapsStatKeys = { "map_item_drop_chance", "map_map_item_drop_chance" };
+        private static readonly string[] AtlasDropsStatKeys = { "map_drop_scaling" }; // 3.30 Atlas Drops key
+        private static readonly string[] ItemQuantityStatKeys = { "map_item_drop_quantity", "map_total_item_quantity" }; // Explicit quantity mods
+        private static readonly string[] ItemRarityStatKeys = { "map_item_drop_rarity", "map_total_item_rarity" };
+        private static readonly string[] PackSizeStatKeys = { "map_pack_size", "map_monster_pack_size", "map_total_pack_size" };
 
         public static ParsedMapItem? ParseMap(GameController gc, NormalInventoryItem itemWrapper, int slotX, int slotY)
         {
@@ -69,6 +72,7 @@ namespace MapCrafter.Services
                 Path = path,
                 Rarity = modsComp?.ItemRarity ?? ItemRarity.Normal,
                 Quality = quality,
+                ItemQuantity = quality, // In 3.30, base Item Quantity comes directly from Chisel Quality: "Quality (Quantity): +20%"
                 Tier = mapKeyComp?.Tier ?? 0,
                 IsCorrupted = baseComp?.isCorrupted ?? false,
                 IsMirrored = false
@@ -85,14 +89,6 @@ namespace MapCrafter.Services
                 parsed.Tier = 17;
 
             // Process Mods
-            var sbTooltip = new StringBuilder();
-            sbTooltip.AppendLine(baseName);
-            sbTooltip.AppendLine($"Rarity: {parsed.Rarity}");
-            if (parsed.Quality > 0)
-                sbTooltip.AppendLine($"Quality: +{parsed.Quality}%");
-            if (parsed.Tier > 0)
-                sbTooltip.AppendLine($"Map Tier: {parsed.Tier}");
-
             var itemMods = modsComp?.ItemMods;
             if (itemMods != null)
             {
@@ -107,7 +103,7 @@ namespace MapCrafter.Services
                     else if (affixType.Contains("Suffix", StringComparison.OrdinalIgnoreCase))
                         parsed.SuffixCount++;
 
-                    // Extract stats (Pack Size, Quantity, Currency, Scarabs)
+                    // Extract stats (Atlas Drops, Item Quantity, Rarity, Pack Size, More Maps, Currency, Threads)
                     var stats = mod.ModRecord?.StatNames;
                     var values = mod.Values;
                     if (stats != null && values != null)
@@ -116,14 +112,20 @@ namespace MapCrafter.Services
                         {
                             var key = stats[i].Key ?? string.Empty;
                             int val = values[i];
-                            if (ContainsAny(key, PackSizeStatKeys))
-                                parsed.PackSize += val;
-                            else if (ContainsAny(key, AtlasDropsStatKeys))
-                                parsed.Quantity += val;
+                            if (ContainsAny(key, MoreThreadsStatKeys))
+                                parsed.ScarabsBonus += val;
                             else if (ContainsAny(key, MoreCurrencyStatKeys))
                                 parsed.CurrencyBonus += val;
-                            else if (ContainsAny(key, MoreThreadsStatKeys))
-                                parsed.ScarabsBonus += val;
+                            else if (ContainsAny(key, MoreMapsStatKeys))
+                                parsed.MoreMapsBonus += val;
+                            else if (ContainsAny(key, AtlasDropsStatKeys))
+                                parsed.AtlasDrops += val;
+                            else if (ContainsAny(key, ItemQuantityStatKeys))
+                                parsed.ItemQuantity += val;
+                            else if (ContainsAny(key, ItemRarityStatKeys))
+                                parsed.ItemRarityBonus += val;
+                            else if (ContainsAny(key, PackSizeStatKeys))
+                                parsed.PackSize += val;
                         }
                     }
 
@@ -134,13 +136,41 @@ namespace MapCrafter.Services
 
                     string lineText = MapEvaluator.CleanModLine(rawLine);
                     parsed.ModLines.Add(lineText);
-                    sbTooltip.AppendLine(lineText);
                 }
             }
 
             parsed.ModCount = parsed.PrefixCount + parsed.SuffixCount;
             if (parsed.ModCount == 0 && itemMods != null)
                 parsed.ModCount = itemMods.Count;
+
+            // Build full tooltip text matching in-game PoE 3.30 layout
+            var sbTooltip = new StringBuilder();
+            sbTooltip.AppendLine(baseName);
+            if (parsed.Tier > 0)
+                sbTooltip.AppendLine($"Map (Tier {parsed.Tier})");
+            sbTooltip.AppendLine($"Rarity: {parsed.Rarity}");
+            if (parsed.ItemQuantity > 0)
+                sbTooltip.AppendLine($"Item Quantity: +{parsed.ItemQuantity}%");
+            if (parsed.AtlasDrops > 0)
+                sbTooltip.AppendLine($"Atlas Drops: +{parsed.AtlasDrops}%");
+            if (parsed.ItemRarityBonus > 0)
+                sbTooltip.AppendLine($"Item Rarity: +{parsed.ItemRarityBonus}%");
+            if (parsed.PackSize > 0)
+                sbTooltip.AppendLine($"Monster Pack Size: +{parsed.PackSize}%");
+            if (parsed.MoreMapsBonus > 0)
+                sbTooltip.AppendLine($"More Maps: +{parsed.MoreMapsBonus}%");
+            if (parsed.CurrencyBonus > 0)
+                sbTooltip.AppendLine($"More Currency: +{parsed.CurrencyBonus}%");
+            if (parsed.ScarabsBonus > 0)
+                sbTooltip.AppendLine($"More Threads: +{parsed.ScarabsBonus}%");
+            if (parsed.Quality > 0)
+                sbTooltip.AppendLine($"Quality (Quantity): +{parsed.Quality}%");
+
+            sbTooltip.AppendLine("--- Mod Affixes ---");
+            foreach (var line in parsed.ModLines)
+            {
+                sbTooltip.AppendLine(line);
+            }
 
             parsed.FormattedTooltipText = sbTooltip.ToString();
             return parsed;
