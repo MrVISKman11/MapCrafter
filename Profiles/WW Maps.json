@@ -5,7 +5,7 @@
   "TargetQuality": 20,
   "Method": 0,
   "ExaltSlam": true,
-  "MaxExaltsToApply": 2,
+  "MaxExaltsToApply": 4,
   "VaalSetting": 0,
   "MaxAttemptsPerMap": 600,
   "MinAtlasDrops": 0,

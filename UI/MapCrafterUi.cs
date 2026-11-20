@@ -342,7 +342,7 @@ namespace MapCrafter.UI
             if (current.ExaltSlam)
             {
                 int maxEx = current.MaxExaltsToApply;
-                if (ImGui.SliderInt("Max Exalts Per Map", ref maxEx, 1, 3))
+                if (ImGui.SliderInt("Max Exalts Per Map", ref maxEx, 1, 6))
                 {
                     current.MaxExaltsToApply = maxEx;
                 }

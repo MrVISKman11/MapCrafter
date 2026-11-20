@@ -15,7 +15,7 @@ namespace MapCrafter.Models
         // Reroll & Modifying
         public RerollMethod Method { get; set; } = RerollMethod.ChaosOrb;
         public bool ExaltSlam { get; set; } = false;
-        public int MaxExaltsToApply { get; set; } = 2; // up to 6 total affixes
+        public int MaxExaltsToApply { get; set; } = 4; // up to 6 total affixes
         public VaalMode VaalSetting { get; set; } = VaalMode.Never;
         public int MaxAttemptsPerMap { get; set; } = 80;
 

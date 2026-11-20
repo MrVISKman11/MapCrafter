@@ -275,6 +275,8 @@ namespace MapCrafter.Services
             CancellationToken ct,
             HashSet<(int x, int y)>? ignoredSlots)
         {
+            map.ExaltsUsed = 0;
+
             // Stage 1: Chisels (Continuous repeat-apply with Shift)
             bool anyChisel = activeProfiles.Any(p => p.ChiselMaps);
             int targetQuality = anyChisel ? activeProfiles.Where(p => p.ChiselMaps).Max(p => p.TargetQuality) : 0;
@@ -367,22 +369,32 @@ namespace MapCrafter.Services
             {
                 map.Status = CraftStatus.UpgradingRarity;
                 CraftLogger.Step("UPGRADE", "Map is Normal rarity. Upgrading to Rare via Alchemy/Binding...");
-                var alch = await _tracker.GetAvailableCurrencyWithRetry(gc, CurrencyKind.Alchemy, ignoredSlots, maxRetries: 3);
-                if (alch == null)
+                int alchAttempts = 0;
+                while (map.Rarity == ItemRarity.Normal && alchAttempts < 3)
                 {
-                    CraftLogger.Error("UPGRADE", "Out of Orb of Alchemy / Binding! Cannot upgrade Normal map.");
-                    StatusMessage = "Out of Orb of Alchemy / Binding!";
-                    map.Status = CraftStatus.OutOfCurrency;
-                    return false;
+                    if (ct.IsCancellationRequested || CrafterInput.IsEmergencyStopPressed()) return false;
+                    alchAttempts++;
+
+                    var alch = await _tracker.GetAvailableCurrencyWithRetry(gc, CurrencyKind.Alchemy, ignoredSlots, maxRetries: 3);
+                    if (alch == null)
+                    {
+                        CraftLogger.Error("UPGRADE", "Out of Orb of Alchemy / Binding! Cannot upgrade Normal map.");
+                        StatusMessage = "Out of Orb of Alchemy / Binding!";
+                        map.Status = CraftStatus.OutOfCurrency;
+                        return false;
+                    }
+
+                    StatusMessage = $"Upgrading map to Rare (Alchemy attempt #{alchAttempts})...";
+                    CraftLogger.Step("UPGRADE", $"Attempt #{alchAttempts}: Using {alch.Kind} from {alch.LocationDescription}...");
+                    await ApplyCurrency(gc, alch.ClickPosition, map.ClickPosition, delay, ct);
+
+                    var refreshed = await WaitForMapChange(gc, map.SlotX, map.SlotY, map.Quality, map.Rarity, map.ModCount, timeoutMs: 900, expectedClickPos: map.ClickPosition);
+                    if (refreshed != null) UpdateMapData(map, refreshed);
+                    CraftLogger.Info("UPGRADE", $"Map state after attempt #{alchAttempts}: Rarity={map.Rarity}, Mods={map.ModCount}");
+
+                    if (map.Rarity == ItemRarity.Rare) break;
+                    await Task.Delay(200, ct);
                 }
-
-                StatusMessage = "Upgrading map to Rare (Alchemy/Binding)...";
-                CraftLogger.Step("UPGRADE", $"Using {alch.Kind} from {alch.LocationDescription}...");
-                await ApplyCurrency(gc, alch.ClickPosition, map.ClickPosition, delay, ct);
-
-                var refreshed = await WaitForMapChange(gc, map.SlotX, map.SlotY, map.Quality, map.Rarity, map.ModCount, timeoutMs: 700);
-                if (refreshed != null) UpdateMapData(map, refreshed);
-                CraftLogger.Info("UPGRADE", $"Map upgraded to: Rarity={map.Rarity}, Mods={map.ModCount}");
             }
 
             // Stage 3: If Magic, scour + alch it
@@ -407,9 +419,18 @@ namespace MapCrafter.Services
                 CraftLogger.Step("UPGRADE", $"Alching map from {alch.LocationDescription}...");
                 await ApplyCurrency(gc, alch.ClickPosition, map.ClickPosition, delay, ct);
 
-                var refreshed = await WaitForMapChange(gc, map.SlotX, map.SlotY, map.Quality, map.Rarity, map.ModCount, timeoutMs: 700);
+                var refreshed = await WaitForMapChange(gc, map.SlotX, map.SlotY, map.Quality, map.Rarity, map.ModCount, timeoutMs: 900, expectedClickPos: map.ClickPosition);
                 if (refreshed != null) UpdateMapData(map, refreshed);
                 CraftLogger.Info("UPGRADE", $"Magic map upgraded to: Rarity={map.Rarity}, Mods={map.ModCount}");
+            }
+
+            // Strict guard before Stage 4: Map MUST be Rare to proceed
+            if (map.Rarity != ItemRarity.Rare)
+            {
+                CraftLogger.Error("UPGRADE", $"Map at ({map.SlotX},{map.SlotY}) is still {map.Rarity} after upgrade attempts. Aborting map to prevent invalid currency loop.");
+                map.Status = CraftStatus.Failed;
+                map.StatusDetails = "Failed to upgrade map to Rare";
+                return false;
             }
 
             // Stage 4: Evaluation & Reroll Loop
@@ -473,6 +494,7 @@ namespace MapCrafter.Services
                             if (ct.IsCancellationRequested || CrafterInput.IsEmergencyStopPressed()) break;
 
                             map.AttemptsUsed++;
+                            map.ExaltsUsed = 0;
                             StatusMessage = $"Rerolling map with Chaos ({map.AttemptsUsed}/{maxAttempts})...";
 
                             int prevModCount = map.ModCount;
@@ -538,6 +560,7 @@ namespace MapCrafter.Services
                 else // Scour + Alch
                 {
                     map.AttemptsUsed++;
+                    map.ExaltsUsed = 0;
                     StatusMessage = $"Rerolling map ({map.AttemptsUsed}/{maxAttempts}): {compEval.Reason}";
                     map.StatusDetails = $"Attempt {map.AttemptsUsed}: {compEval.Reason}";
 
@@ -587,7 +610,7 @@ namespace MapCrafter.Services
         {
             // Check Exalt Slam option
             bool passedAfterExalts = true;
-            if (profile.ExaltSlam && map.HasModSpace && map.ExaltsUsed < profile.MaxExaltsToApply)
+            if (profile.ExaltSlam && map.ModCount < 6 && map.HasModSpace)
             {
                 passedAfterExalts = await HandleExaltSlamming(gc, map, profile, globalBannedMods, delay, ct, ignoredSlots);
             }
@@ -640,8 +663,9 @@ namespace MapCrafter.Services
             CancellationToken ct,
             HashSet<(int x, int y)>? ignoredSlots)
         {
-            CraftLogger.Step("EXALT", $"Starting Exalt Slam stage for '{profile.Name}'. Mod space: {map.ModCount}/6, Allowed slams: {profile.MaxExaltsToApply}");
-            while (map.HasModSpace && map.ExaltsUsed < profile.MaxExaltsToApply)
+            int maxSlams = profile.MaxExaltsToApply > 0 ? profile.MaxExaltsToApply : 6;
+            CraftLogger.Step("EXALT", $"Starting Exalt Slam stage for '{profile.Name}'. Mod space: {map.ModCount}/6, Allowed slams: {maxSlams}");
+            while (map.ModCount < 6 && map.HasModSpace && map.ExaltsUsed < maxSlams)
             {
                 if (ct.IsCancellationRequested || CrafterInput.IsEmergencyStopPressed()) return false;
 
@@ -655,7 +679,7 @@ namespace MapCrafter.Services
                 }
 
                 map.Status = CraftStatus.Exalting;
-                StatusMessage = $"Exalting map (mod space {map.ModCount}/6)...";
+                StatusMessage = $"Exalting map ({map.ModCount}/6 mods)...";
                 CraftLogger.Step("EXALT", $"Slam #{map.ExaltsUsed + 1}: Using Exalted Orb from {exalt.LocationDescription}...");
                 CraftLogger.Info("EXALT", $"Coordinates: Exalt=({exalt.ClickPosition.X:F0}, {exalt.ClickPosition.Y:F0}), Map=({map.ClickPosition.X:F0}, {map.ClickPosition.Y:F0})");
                 CraftLogger.Info("EXALT", $"Pre-slam map state: ModCount={map.ModCount}, Mods: [{string.Join(" | ", map.ModLines)}]");
@@ -663,19 +687,25 @@ namespace MapCrafter.Services
                 int prevModCount = map.ModCount;
                 var prevMods = map.RawModNames.ToList();
 
-                bool applied = await ApplyCurrency(gc, exalt.ClickPosition, map.ClickPosition, delay, ct);
+                bool applied = false;
+                for (int attempt = 1; attempt <= 3; attempt++)
+                {
+                    applied = await ApplyCurrency(gc, exalt.ClickPosition, map.ClickPosition, delay, ct);
+                    if (applied) break;
+                    CraftLogger.Warn("EXALT", $"ApplyCurrency attempt #{attempt} failed or item picked up. Retrying in 250ms...");
+                    await Task.Delay(250, ct);
+                }
+
                 if (!applied)
                 {
-                    CraftLogger.Error("EXALT", "ApplyCurrency failed during Exalt slam! Aborting this map.");
-                    map.Status = CraftStatus.Failed;
-                    map.StatusDetails = "Failed to apply Exalted Orb";
-                    return false;
+                    CraftLogger.Warn("EXALT", "ApplyCurrency failed 3 times during Exalt slam! Retaining matched map without further slams.");
+                    return true;
                 }
 
                 map.ExaltsUsed++;
 
-                var refreshed = await WaitForMapChange(gc, map.SlotX, map.SlotY, map.Quality, map.Rarity, prevModCount, map.AtlasDrops, map.PackSize, prevMods, timeoutMs: 1000);
-                if (refreshed != null && (refreshed.ModCount > prevModCount || refreshed.RawModNames.Count > prevMods.Count))
+                var refreshed = await WaitForMapChange(gc, map.SlotX, map.SlotY, map.Quality, map.Rarity, prevModCount, map.AtlasDrops, map.PackSize, prevMods, timeoutMs: 1200, expectedClickPos: map.ClickPosition);
+                if (refreshed != null && (refreshed.ModCount > prevModCount || refreshed.RawModNames.Count > prevMods.Count || !refreshed.RawModNames.SequenceEqual(prevMods)))
                 {
                     UpdateMapData(map, refreshed);
                     CraftLogger.Success("EXALT", $"Exalt slam #{map.ExaltsUsed} confirmed! Mod count: {prevModCount} -> {map.ModCount}");
@@ -720,7 +750,7 @@ namespace MapCrafter.Services
 
             // Move to target item with settle
             await CrafterInput.MoveCursorTo(itemPos);
-            int preDelay = Math.Max(150, (delayMs / 2) + _rng.Next(25));
+            int preDelay = Math.Max(180, delayMs + _rng.Next(25));
             await Task.Delay(preDelay, ct);
             if (ct.IsCancellationRequested || CrafterInput.IsEmergencyStopPressed()) return false;
 
@@ -728,7 +758,7 @@ namespace MapCrafter.Services
             Input.LeftDown();
             await Task.Delay(50 + _rng.Next(20), ct);
             Input.LeftUp();
-            int postDelay = Math.Max(150, (delayMs / 2) + _rng.Next(25));
+            int postDelay = Math.Max(180, delayMs + _rng.Next(25));
             await Task.Delay(postDelay, ct);
 
             // ANTI-PICKUP SAFETY GUARD: Verify map was NOT accidentally picked up onto cursor
@@ -737,11 +767,11 @@ namespace MapCrafter.Services
             {
                 CraftLogger.Error("SAFETY", $"CRITICAL: Item was picked up onto cursor at ({itemPos.X:F0}, {itemPos.Y:F0})! Immediately dropping back into slot.");
                 Input.SetCursorPos(itemPos);
-                await Task.Delay(60, ct);
+                await Task.Delay(80, ct);
                 Input.LeftDown();
-                await Task.Delay(45, ct);
+                await Task.Delay(50, ct);
                 Input.LeftUp();
-                await Task.Delay(150, ct);
+                await Task.Delay(200, ct);
                 CrafterInput.ReleaseAll();
                 return false;
             }

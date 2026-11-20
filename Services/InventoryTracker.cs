@@ -306,7 +306,6 @@ namespace MapCrafter.Services
                     map.Status = existing.Status;
                     map.StatusDetails = existing.StatusDetails;
                     map.AttemptsUsed = existing.AttemptsUsed;
-                    map.ExaltsUsed = existing.ExaltsUsed;
                 }
             }
 

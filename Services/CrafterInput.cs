@@ -83,7 +83,7 @@ namespace MapCrafter.Services
             await MoveCursorTo(pos);
 
             // Pre-click settle: let PoE UI hover detection fire and slot highlight appear
-            int preDelay = Math.Max(150, (delayMs / 2) + _rng.Next(25));
+            int preDelay = Math.Max(200, delayMs + _rng.Next(30));
             await Task.Delay(preDelay);
             if (IsEmergencyStopPressed()) throw new OperationCanceledException("Emergency stop detected.");
 
@@ -92,7 +92,7 @@ namespace MapCrafter.Services
             Input.RightUp();
 
             // Post-click settle: let PoE game client register currency pickup
-            int postDelay = Math.Max(150, (delayMs / 2) + _rng.Next(25));
+            int postDelay = Math.Max(180, delayMs + _rng.Next(30));
             await Task.Delay(postDelay);
         }
 

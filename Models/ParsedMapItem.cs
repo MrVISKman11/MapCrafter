@@ -64,6 +64,6 @@ namespace MapCrafter.Models
         public int AttemptsUsed { get; set; }
         public int ExaltsUsed { get; set; }
 
-        public bool HasModSpace => (PrefixCount < 3 || SuffixCount < 3) && ModCount < 6;
+        public bool HasModSpace => ModCount < 6;
     }
 }
