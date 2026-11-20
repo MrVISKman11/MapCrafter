@@ -88,8 +88,11 @@ namespace MapCrafter.Services
             if (parsed.Tier <= 0 && path.Contains("Tier17", StringComparison.OrdinalIgnoreCase))
                 parsed.Tier = 17;
 
-            // Process Mods
+            // Process Mods (Only explicit rollable affixes count towards Prefix/Suffix/ModCount limits)
             var itemMods = modsComp?.ItemMods;
+            var implicitMods = modsComp?.ImplicitMods;
+            int explicitCount = 0;
+
             if (itemMods != null)
             {
                 foreach (var mod in itemMods)
@@ -97,11 +100,30 @@ namespace MapCrafter.Services
                     if (string.IsNullOrEmpty(mod.RawName)) continue;
                     parsed.RawModNames.Add(mod.RawName);
 
+                    // Build user-readable line (stripped of internal tags like [EvocatorKTash|Evocator of K'Tash])
+                    string rawLine = !string.IsNullOrEmpty(mod.Translation) && !mod.Translation.Contains("<unknown")
+                        ? mod.Translation
+                        : (!string.IsNullOrEmpty(mod.DisplayName) ? mod.DisplayName : GetReadableModName(mod.RawName));
+
+                    string lineText = MapEvaluator.CleanModLine(rawLine);
+                    parsed.ModLines.Add(lineText);
+
+                    // Check if this mod is an implicit or memory influence (e.g. Originator's Memories on T16.5 maps)
                     string affixType = mod.ModRecord?.AffixType.ToString() ?? "";
-                    if (affixType.Contains("Prefix", StringComparison.OrdinalIgnoreCase))
-                        parsed.PrefixCount++;
-                    else if (affixType.Contains("Suffix", StringComparison.OrdinalIgnoreCase))
-                        parsed.SuffixCount++;
+                    bool isImplicit = affixType.Contains("Implicit", StringComparison.OrdinalIgnoreCase) ||
+                                     (implicitMods != null && implicitMods.Any(im => im.Address == mod.Address || im.RawName == mod.RawName)) ||
+                                     lineText.Contains("Influenced by the Originator's Memories", StringComparison.OrdinalIgnoreCase) ||
+                                     mod.RawName.Contains("Originator", StringComparison.OrdinalIgnoreCase) ||
+                                     mod.RawName.Contains("MemoryInfluence", StringComparison.OrdinalIgnoreCase);
+
+                    if (!isImplicit)
+                    {
+                        explicitCount++;
+                        if (affixType.Contains("Prefix", StringComparison.OrdinalIgnoreCase))
+                            parsed.PrefixCount++;
+                        else if (affixType.Contains("Suffix", StringComparison.OrdinalIgnoreCase))
+                            parsed.SuffixCount++;
+                    }
 
                     // Extract stats (Atlas Drops, Item Quantity, Rarity, Pack Size, More Maps, Currency, Threads)
                     var stats = mod.ModRecord?.StatNames;
@@ -128,20 +150,12 @@ namespace MapCrafter.Services
                                 parsed.PackSize += val;
                         }
                     }
-
-                    // Build user-readable line (stripped of internal tags like [EvocatorKTash|Evocator of K'Tash])
-                    string rawLine = !string.IsNullOrEmpty(mod.Translation) && !mod.Translation.Contains("<unknown")
-                        ? mod.Translation
-                        : (!string.IsNullOrEmpty(mod.DisplayName) ? mod.DisplayName : GetReadableModName(mod.RawName));
-
-                    string lineText = MapEvaluator.CleanModLine(rawLine);
-                    parsed.ModLines.Add(lineText);
                 }
             }
 
             parsed.ModCount = parsed.PrefixCount + parsed.SuffixCount;
-            if (parsed.ModCount == 0 && itemMods != null)
-                parsed.ModCount = itemMods.Count;
+            if (parsed.ModCount == 0 || parsed.ModCount < explicitCount)
+                parsed.ModCount = explicitCount;
 
             // Build full tooltip text matching in-game PoE 3.30 layout
             var sbTooltip = new StringBuilder();

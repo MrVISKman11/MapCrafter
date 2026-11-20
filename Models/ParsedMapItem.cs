@@ -60,6 +60,7 @@ namespace MapCrafter.Models
         // Crafting tracking
         public CraftStatus Status { get; set; } = CraftStatus.Pending;
         public string StatusDetails { get; set; } = "Pending";
+        public string? MatchedProfileName { get; set; }
         public int AttemptsUsed { get; set; }
         public int ExaltsUsed { get; set; }
 

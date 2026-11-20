@@ -32,20 +32,12 @@ namespace MapCrafter.Services
                 catch { }
             }
 
-            // Ensure test profile exists
-            if (!profiles.Any(p => p.Name.Contains("Test Profile", StringComparison.OrdinalIgnoreCase)))
+            // Only create a default profile if the user has no profiles at all
+            if (profiles.Count == 0)
             {
                 var test = CreateTestProfile();
-                profiles.Insert(0, test);
+                profiles.Add(test);
                 SaveProfile(test, basePluginDir);
-            }
-
-            // Always prioritize Test Profile first in the list
-            var testProfile = profiles.FirstOrDefault(p => p.Name.Contains("Test Profile", StringComparison.OrdinalIgnoreCase));
-            if (testProfile != null)
-            {
-                profiles.Remove(testProfile);
-                profiles.Insert(0, testProfile);
             }
 
             return profiles;

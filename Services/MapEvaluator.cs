@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using MapCrafter.Models;
 
@@ -14,12 +15,105 @@ namespace MapCrafter.Services
         public static EvaluationResult Fail(string reason) => new() { Passed = false, Reason = reason };
     }
 
+    public class CompositeEvaluationResult
+    {
+        public bool Passed { get; set; }
+        public CraftingProfile? MatchedProfile { get; set; }
+        public string Reason { get; set; } = string.Empty;
+        public bool IsBuildBricked { get; set; }
+
+        public static CompositeEvaluationResult Success(CraftingProfile matched) =>
+            new() { Passed = true, MatchedProfile = matched, Reason = $"Matched profile '{matched.Name}'" };
+
+        public static CompositeEvaluationResult BuildBricked(string mod) =>
+            new() { Passed = false, IsBuildBricked = true, Reason = $"Contains build-bricking mod: '{mod}'" };
+
+        public static CompositeEvaluationResult Fail(string reason) =>
+            new() { Passed = false, Reason = reason };
+    }
+
     public static class MapEvaluator
     {
+        public static string? CheckGlobalBannedMods(ParsedMapItem map, IReadOnlyList<string>? globalBannedMods)
+        {
+            if (map == null || globalBannedMods == null) return null;
+
+            foreach (var banned in globalBannedMods)
+            {
+                if (string.IsNullOrWhiteSpace(banned)) continue;
+                if (MatchesModRule(map, banned.Trim()))
+                {
+                    return banned.Trim();
+                }
+            }
+
+            return null;
+        }
+
+        public static CompositeEvaluationResult EvaluateComposite(
+            ParsedMapItem map,
+            IReadOnlyList<string>? globalBannedMods,
+            IReadOnlyList<CraftingProfile> activeProfiles)
+        {
+            if (map == null)
+                return CompositeEvaluationResult.Fail("No map item");
+
+            // Pass 1: Global Build Safety Check (Hard Fail)
+            var bricker = CheckGlobalBannedMods(map, globalBannedMods);
+            if (bricker != null)
+            {
+                return CompositeEvaluationResult.BuildBricked(bricker);
+            }
+
+            if (activeProfiles == null || activeProfiles.Count == 0)
+                return CompositeEvaluationResult.Fail("No active crafting profiles selected");
+
+            // Pass 2: Disjunctive Target Profile Matching (Match ANY)
+            var failureReasons = new List<string>();
+            foreach (var profile in activeProfiles)
+            {
+                var eval = Evaluate(map, profile);
+                if (eval.Passed)
+                {
+                    return CompositeEvaluationResult.Success(profile);
+                }
+                failureReasons.Add($"{profile.Name}: {eval.Reason}");
+            }
+
+            return CompositeEvaluationResult.Fail(string.Join(" | ", failureReasons));
+        }
+        public static bool HasAnyCriteria(CraftingProfile profile)
+        {
+            if (profile == null) return false;
+
+            if (profile.RequiredMods != null && profile.RequiredMods.Any(r => !string.IsNullOrWhiteSpace(r)))
+                return true;
+
+            if (!string.IsNullOrWhiteSpace(profile.CustomRegex))
+                return true;
+
+            if (profile.MinAtlasDrops > 0 ||
+                profile.MinItemRarity > 0 ||
+                profile.MinPackSize > 0 ||
+                profile.MinMoreMaps > 0 ||
+                profile.MinMoreCurrency > 0 ||
+                profile.MinMoreThreads > 0 ||
+                profile.MinItemQuantity > 0)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         public static EvaluationResult Evaluate(ParsedMapItem map, CraftingProfile profile)
         {
             if (map == null)
                 return EvaluationResult.Fail("No map item");
+
+            // Guardrail: A profile with no active criteria (all 0 min stats, no required mods, no regex) must never match
+            if (!HasAnyCriteria(profile))
+                return EvaluationResult.Fail($"Profile '{profile.Name}' has no criteria defined (configure minimum stats or required mods)");
 
             // 1. Check Banned Mods
             foreach (var banned in profile.BannedMods)

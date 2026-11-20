@@ -504,13 +504,18 @@ namespace MapCrafter.Services
                 return CurrencyKind.Chaos;
 
             // Exalt: Standard Exalted Orb only (exclude Eldritch / Conqueror variants)
-            if ((path.EndsWith("CurrencyAddModToRare", StringComparison.OrdinalIgnoreCase) || 
-                 baseName.Equals("Exalted Orb", StringComparison.OrdinalIgnoreCase)) &&
+            if ((path.Contains("CurrencyAddModToRare", StringComparison.OrdinalIgnoreCase) || 
+                 baseName.Contains("Exalted Orb", StringComparison.OrdinalIgnoreCase)) &&
                 !path.Contains("Eldritch", StringComparison.OrdinalIgnoreCase) &&
                 !path.Contains("Hunter", StringComparison.OrdinalIgnoreCase) &&
                 !path.Contains("Crusader", StringComparison.OrdinalIgnoreCase) &&
                 !path.Contains("Warlord", StringComparison.OrdinalIgnoreCase) &&
-                !path.Contains("Redeemer", StringComparison.OrdinalIgnoreCase))
+                !path.Contains("Redeemer", StringComparison.OrdinalIgnoreCase) &&
+                !baseName.Contains("Eldritch", StringComparison.OrdinalIgnoreCase) &&
+                !baseName.Contains("Hunter", StringComparison.OrdinalIgnoreCase) &&
+                !baseName.Contains("Crusader", StringComparison.OrdinalIgnoreCase) &&
+                !baseName.Contains("Warlord", StringComparison.OrdinalIgnoreCase) &&
+                !baseName.Contains("Redeemer", StringComparison.OrdinalIgnoreCase))
             {
                 return CurrencyKind.Exalted;
             }

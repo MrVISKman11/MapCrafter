@@ -17,8 +17,10 @@ namespace MapCrafter.UI
         private string _newBannedModInput = string.Empty;
         private string _newRequiredModInput = string.Empty;
         private string _newProfileNameInput = "My Custom Profile";
+        private string _newGlobalBannedModInput = string.Empty;
         private int _selectedPresetIndex = 0;
         private int _selectedPresetCategory = 0; // 0 = T16, 1 = T17
+        private int _selectedGlobalPresetIndex = 0;
         private string _modSearchQuery = string.Empty;
         private int _searchCategoryIdx = 0; // 0 = All, 1 = Generic (T16), 2 = Uber (T17)
 
@@ -27,6 +29,26 @@ namespace MapCrafter.UI
 
         private readonly string[] _methodOptions = { "Chaos Orb", "Scour + Alch" };
         private readonly string[] _vaalOptions = { "Never", "On Craft Success", "All Inventory Maps (Unconditional)" };
+
+        private readonly string[] _globalBrickerPresets =
+        {
+            "reflect",
+            "Reflects % of Elemental Damage",
+            "Reflects % of Physical Damage",
+            "Players cannot Regenerate Life, Mana or Energy Shield",
+            "cannot regenerate",
+            "cannot leech",
+            "Cannot Leech Life",
+            "Cannot Leech Mana",
+            "less Recovery Rate",
+            "less effect of Flasks",
+            "less Flask Charges gained",
+            "Action Speed cannot be modified",
+            "Cannot inflict Withered",
+            "patches of Desecrated Ground",
+            "steal Power, Frenzy and Endurance Charges",
+            "avoid Elemental Ailments"
+        };
 
         private static void SafeText(string text)
         {
@@ -84,7 +106,13 @@ namespace MapCrafter.UI
 
                     if (ImGui.BeginTabItem("Rules & Criteria"))
                     {
-                        RenderRulesTab(profiles);
+                        RenderRulesTab(profiles, settings);
+                        ImGui.EndTabItem();
+                    }
+
+                    if (ImGui.BeginTabItem("Build Safety (Global Bans)"))
+                    {
+                        RenderBuildSafetyTab(settings, pluginDir);
                         ImGui.EndTabItem();
                     }
 
@@ -121,15 +149,27 @@ namespace MapCrafter.UI
                 if (_selectedProfileIndex >= profileNames.Length) _selectedProfileIndex = 0;
 
                 ImGui.Spacing();
-                SafeTextColored(new Vector4(1f, 0.85f, 0.2f, 1f), "Profile:");
+                SafeTextColored(new Vector4(1f, 0.85f, 0.2f, 1f), "Profile (Config):");
                 ImGui.SameLine();
-                ImGui.SetNextItemWidth(320);
+                ImGui.SetNextItemWidth(300);
                 if (ImGui.Combo("##HeaderProfileSelector", ref _selectedProfileIndex, profileNames, profileNames.Length))
                 {
                     settings.ActiveProfileName.Value = profileNames[_selectedProfileIndex];
                 }
                 ImGui.SameLine();
                 SafeTextDisabled($"({_selectedProfileIndex + 1}/{profiles.Count})");
+
+                // Active Profiles Indicator
+                var activeList = profiles.Where(p => settings.ActiveProfileNames.Contains(p.Name)).Select(p => p.Name).ToList();
+                ImGui.SameLine();
+                if (activeList.Count > 0)
+                {
+                    SafeTextColored(new Vector4(0.35f, 1f, 0.65f, 1f), $"| Active ({activeList.Count}): [{string.Join(", ", activeList)}]");
+                }
+                else
+                {
+                    SafeTextDisabled($"| Active (Single): [{profileNames[_selectedProfileIndex]}]");
+                }
             }
 
             ImGui.Spacing();
@@ -140,11 +180,14 @@ namespace MapCrafter.UI
                 ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.2f, 0.8f, 0.2f, 1f));
                 if (ImGui.Button("START CRAFTING (F8)", new Vector2(200, 34)))
                 {
-                    if (profiles.Count > 0 && _selectedProfileIndex < profiles.Count)
+                    var activeProfs = profiles.Where(p => settings.ActiveProfileNames.Contains(p.Name)).ToList();
+                    if (activeProfs.Count == 0 && profiles.Count > 0)
                     {
-                        var activeProf = profiles[_selectedProfileIndex];
-                        engine.Start(gc, activeProf, settings, ignoredSlots);
+                        if (_selectedProfileIndex < profiles.Count) activeProfs.Add(profiles[_selectedProfileIndex]);
+                        else activeProfs.Add(profiles[0]);
                     }
+
+                    engine.Start(gc, activeProfs, settings.GlobalBannedMods, settings, ignoredSlots);
                 }
                 ImGui.PopStyleColor(2);
 
@@ -183,11 +226,49 @@ namespace MapCrafter.UI
                 }
             }
 
+            // Section 1: Multi-Profile Active Checklist (Disjunctive Match Any)
+            SafeTextColored(new Vector4(0.4f, 1f, 0.7f, 1f), "Active Profiles for Crafting (Map matches ANY checked profile):");
+            SafeTextDisabled("Check each profile you are willing to keep. Cartographer's chisels apply to highest Target Quality.");
+
+            for (int i = 0; i < profiles.Count; i++)
+            {
+                var p = profiles[i];
+                bool isChecked = settings.ActiveProfileNames.Contains(p.Name);
+                if (ImGui.Checkbox($"{p.Name}##ActiveCheck_{i}", ref isChecked))
+                {
+                    if (isChecked && !settings.ActiveProfileNames.Contains(p.Name))
+                        settings.ActiveProfileNames.Add(p.Name);
+                    else if (!isChecked)
+                        settings.ActiveProfileNames.Remove(p.Name);
+                }
+                if (i < profiles.Count - 1) ImGui.SameLine();
+            }
+
+            ImGui.Spacing();
+            if (ImGui.SmallButton("Select All Profiles"))
+            {
+                foreach (var p in profiles)
+                {
+                    if (!settings.ActiveProfileNames.Contains(p.Name))
+                        settings.ActiveProfileNames.Add(p.Name);
+                }
+            }
+            ImGui.SameLine();
+            if (ImGui.SmallButton("Clear All (Use Selected Profile Only)"))
+            {
+                settings.ActiveProfileNames.Clear();
+            }
+
+            ImGui.Separator();
+
+            // Section 2: Profile Selection & Management
+            SafeTextColored(new Vector4(1f, 0.85f, 0.2f, 1f), "Profile Details / Editing (Select profile to inspect/edit below):");
+
             // Profile Selector Dropdown
             var profileNames = profiles.Select(p => p.Name).ToArray();
             if (_selectedProfileIndex >= profileNames.Length) _selectedProfileIndex = 0;
 
-            ImGui.Text("Active Profile:");
+            ImGui.Text("Editing Profile:");
             ImGui.SameLine();
             if (ImGui.Combo("##ProfileSelector", ref _selectedProfileIndex, profileNames, profileNames.Length))
             {
@@ -216,13 +297,14 @@ namespace MapCrafter.UI
             if (profiles.Count > 1 && ImGui.Button("Delete Profile"))
             {
                 var toDelete = profiles[_selectedProfileIndex];
+                settings.ActiveProfileNames.Remove(toDelete.Name);
                 ProfileManager.DeleteProfile(toDelete, pluginDir);
                 profiles.RemoveAt(_selectedProfileIndex);
                 _selectedProfileIndex = Math.Max(0, _selectedProfileIndex - 1);
             }
 
             ImGui.Separator();
-            ImGui.TextColored(new Vector4(0.4f, 0.9f, 1f, 1f), "Crafting Strategy & Options");
+            ImGui.TextColored(new Vector4(0.4f, 0.9f, 1f, 1f), $"Crafting Strategy & Options for '{current.Name}'");
 
             // Method
             int methodIdx = (int)current.Method;
@@ -298,7 +380,7 @@ namespace MapCrafter.UI
             }
         }
 
-        private void RenderRulesTab(List<CraftingProfile> profiles)
+        private void RenderRulesTab(List<CraftingProfile> profiles, Settings settings)
         {
             if (profiles.Count == 0 || _selectedProfileIndex >= profiles.Count) return;
             var current = profiles[_selectedProfileIndex];
@@ -493,6 +575,15 @@ namespace MapCrafter.UI
                         ImGui.PopStyleColor(1);
 
                         ImGui.SameLine();
+                        ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.85f, 0.15f, 0.15f, 1f));
+                        if (ImGui.SmallButton("+ Global Ban"))
+                        {
+                            if (!settings.GlobalBannedMods.Contains(mod.Name))
+                                settings.GlobalBannedMods.Add(mod.Name);
+                        }
+                        ImGui.PopStyleColor(1);
+
+                        ImGui.SameLine();
                         var catColor = mod.Category == "Uber" ? new Vector4(1f, 0.5f, 0.2f, 1f) : new Vector4(0.8f, 0.8f, 0.8f, 1f);
                         SafeTextColored(catColor, $"[{mod.Category}] ");
 
@@ -526,6 +617,89 @@ namespace MapCrafter.UI
                 }
             }
             ImGui.EndChild(); // ALWAYS called outside if(BeginChild)
+        }
+
+        private void RenderBuildSafetyTab(Settings settings, string pluginDir)
+        {
+            SafeTextColored(new Vector4(1f, 0.35f, 0.35f, 1f), "Global Build Safety - Character Bricking Mods");
+            SafeTextDisabled("These mods immediately brick your character (e.g. Reflect, Cannot Leech, Cannot Regenerate Life, Less Flask Effect).");
+            SafeTextDisabled("Pass 1 hard-fails ANY map containing these mods before profile rules are checked, ensuring you NEVER die or waste maps.");
+
+            ImGui.Spacing();
+            ImGui.Separator();
+
+            // Preset dropdown
+            SafeTextColored(new Vector4(1f, 0.85f, 0.2f, 1f), "Quick Add Build-Bricking Presets:");
+            ImGui.SetNextItemWidth(360);
+            ImGui.Combo("##GlobalPresetCombo", ref _selectedGlobalPresetIndex, _globalBrickerPresets, _globalBrickerPresets.Length);
+            ImGui.SameLine();
+            if (ImGui.Button("Add Global Ban Preset"))
+            {
+                string preset = _globalBrickerPresets[_selectedGlobalPresetIndex];
+                if (!settings.GlobalBannedMods.Contains(preset))
+                {
+                    settings.GlobalBannedMods.Add(preset);
+                }
+            }
+
+            ImGui.Spacing();
+
+            // Custom text box
+            ImGui.SetNextItemWidth(360);
+            ImGui.InputTextWithHint("##NewGlobalBannedMod", "Enter custom global banned text / regex...", ref _newGlobalBannedModInput, 150);
+            ImGui.SameLine();
+            if (ImGui.Button("Add Custom Global Ban"))
+            {
+                if (!string.IsNullOrWhiteSpace(_newGlobalBannedModInput))
+                {
+                    var val = _newGlobalBannedModInput.Trim();
+                    if (!settings.GlobalBannedMods.Contains(val))
+                    {
+                        settings.GlobalBannedMods.Add(val);
+                    }
+                    _newGlobalBannedModInput = string.Empty;
+                }
+            }
+
+            ImGui.SameLine();
+            if (settings.GlobalBannedMods.Count > 0 && ImGui.Button("Clear All Global Bans"))
+            {
+                settings.GlobalBannedMods.Clear();
+            }
+
+            ImGui.Spacing();
+            SafeTextColored(new Vector4(0.4f, 0.9f, 1f, 1f), $"Active Global Banned Mods ({settings.GlobalBannedMods.Count}):");
+
+            if (ImGui.BeginChild("GlobalBannedModsList", new Vector2(0, 320), ImGuiChildFlags.Borders))
+            {
+                for (int i = 0; i < settings.GlobalBannedMods.Count; i++)
+                {
+                    ImGui.PushID($"GlobalBan_{i}");
+                    bool removed = false;
+                    try
+                    {
+                        ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.75f, 0.2f, 0.2f, 1f));
+                        if (ImGui.Button("X", new Vector2(24, 20)))
+                        {
+                            settings.GlobalBannedMods.RemoveAt(i);
+                            removed = true;
+                        }
+                        ImGui.PopStyleColor(1);
+
+                        if (!removed)
+                        {
+                            ImGui.SameLine();
+                            SafeText(settings.GlobalBannedMods[i]);
+                        }
+                    }
+                    finally
+                    {
+                        ImGui.PopID();
+                    }
+                    if (removed) break;
+                }
+            }
+            ImGui.EndChild();
         }
 
         private void RenderInventoryTab(GameController gc, CraftingEngine engine, HashSet<(int x, int y)> ignoredSlots)
@@ -623,6 +797,10 @@ namespace MapCrafter.UI
                         else if (mapsBySlot.TryGetValue((x, y), out var m))
                         {
                             SafeText($"Map: {m.BaseName} [Tier {m.Tier}]");
+                            if (!string.IsNullOrEmpty(m.MatchedProfileName))
+                            {
+                                SafeTextColored(new Vector4(0.35f, 1f, 0.65f, 1f), $"Matched Profile: [{m.MatchedProfileName}]");
+                            }
                             SafeText($"Status: {m.Status} - {m.StatusDetails}");
                             SafeText($"Quality: +{m.Quality}% | Item Quantity: +{m.ItemQuantity}% | Atlas Drops: +{m.AtlasDrops}%");
                             SafeText($"Item Rarity: +{m.ItemRarityBonus}% | Pack Size: +{m.PackSize}%");

@@ -120,11 +120,16 @@ namespace MapCrafter
                     if (elapsedSinceHotkey >= 400)
                     {
                         _lastHotkeyActionTime = now;
-                        if (_profiles.Count > 0)
+                        var activeProfiles = GetActiveProfiles();
+                        if (activeProfiles.Count > 0)
                         {
-                            var activeProfile = _profiles.FirstOrDefault(p => p.Name.Equals(Settings.ActiveProfileName.Value, StringComparison.OrdinalIgnoreCase)) ?? _profiles[0];
-                            CraftLogger.Info("CORE", $"Start requested via Hotkey with profile '{activeProfile.Name}'.");
-                            _engine.Start(GameController, activeProfile, Settings, _ignoredSlots);
+                            string names = string.Join(", ", activeProfiles.Select(p => $"'{p.Name}'"));
+                            CraftLogger.Info("CORE", $"Start requested via Hotkey with {activeProfiles.Count} active profile(s): [{names}].");
+                            _engine.Start(GameController, activeProfiles, Settings.GlobalBannedMods, Settings, _ignoredSlots);
+                        }
+                        else
+                        {
+                            CraftLogger.Warn("CORE", "Hotkey pressed but no active profiles available to craft with!");
                         }
                     }
                 }
@@ -176,6 +181,27 @@ namespace MapCrafter
                     Graphics.DrawText($"CRAFTING: {map.Status}", new Vector2(rect.Left + 2, rect.Top + 2), SharpDX.Color.White);
                 }
             }
+        }
+
+        public List<CraftingProfile> GetActiveProfiles()
+        {
+            var list = new List<CraftingProfile>();
+            if (Settings.ActiveProfileNames != null && Settings.ActiveProfileNames.Count > 0)
+            {
+                foreach (var name in Settings.ActiveProfileNames)
+                {
+                    var p = _profiles.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                    if (p != null && !list.Contains(p)) list.Add(p);
+                }
+            }
+
+            if (list.Count == 0 && _profiles.Count > 0)
+            {
+                var single = _profiles.FirstOrDefault(p => p.Name.Equals(Settings.ActiveProfileName.Value, StringComparison.OrdinalIgnoreCase)) ?? _profiles[0];
+                list.Add(single);
+            }
+
+            return list;
         }
 
         public override void OnClose()

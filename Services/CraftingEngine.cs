@@ -29,10 +29,23 @@ namespace MapCrafter.Services
 
         public void Start(GameController gc, CraftingProfile profile, Settings settings, HashSet<(int x, int y)> ignoredSlots)
         {
+            Start(gc, new[] { profile }, settings.GlobalBannedMods, settings, ignoredSlots);
+        }
+
+        public void Start(GameController gc, IReadOnlyList<CraftingProfile> activeProfiles, IReadOnlyList<string> globalBannedMods, Settings settings, HashSet<(int x, int y)> ignoredSlots)
+        {
             if (_isRunning) return;
+            if (activeProfiles == null || activeProfiles.Count == 0)
+            {
+                StatusMessage = "No active profiles selected!";
+                CraftLogger.Warn("ENGINE", "Attempted to start crafting without any active profiles.");
+                return;
+            }
 
             StartTime = DateTime.UtcNow;
-            CraftLogger.Step("ENGINE", $"Starting crafting session with profile '{profile.Name}'");
+            string profileNames = string.Join(", ", activeProfiles.Select(p => $"'{p.Name}'"));
+            CraftLogger.Step("ENGINE", $"Starting crafting session with {activeProfiles.Count} active profile(s): {profileNames}");
+            CraftLogger.Step("ENGINE", $"Global build-banned mods ({globalBannedMods?.Count ?? 0}): [{string.Join(", ", globalBannedMods ?? Array.Empty<string>())}]");
             _cts = new CancellationTokenSource();
             _isRunning = true;
             settings.IsRunning.Value = true;
@@ -41,7 +54,7 @@ namespace MapCrafter.Services
             {
                 try
                 {
-                    await RunCraftingSession(gc, profile, settings, _cts.Token, ignoredSlots);
+                    await RunCraftingSession(gc, activeProfiles, globalBannedMods ?? Array.Empty<string>(), settings, _cts.Token, ignoredSlots);
                 }
                 catch (OperationCanceledException)
                 {
@@ -72,7 +85,7 @@ namespace MapCrafter.Services
             StatusMessage = "Stopping...";
         }
 
-        private async Task RunCraftingSession(GameController gc, CraftingProfile profile, Settings settings, CancellationToken ct, HashSet<(int x, int y)>? ignoredSlots)
+        private async Task RunCraftingSession(GameController gc, IReadOnlyList<CraftingProfile> activeProfiles, IReadOnlyList<string> globalBannedMods, Settings settings, CancellationToken ct, HashSet<(int x, int y)>? ignoredSlots)
         {
             CrafterInput.WindowRect = gc.Window.GetWindowRectangle();
             CraftLogger.Info("WINDOW", $"PoE Window bounds: X={CrafterInput.WindowRect.X}, Y={CrafterInput.WindowRect.Y}, W={CrafterInput.WindowRect.Width}, H={CrafterInput.WindowRect.Height}");
@@ -128,10 +141,13 @@ namespace MapCrafter.Services
             }
 
             int delay = settings.ActionDelayMs.Value;
-            CraftLogger.Info("CONFIG", $"Action delay: {delay}ms | MaxAttempts: {profile.MaxAttemptsPerMap} | ChiselTarget: {profile.TargetQuality}% (Enabled:{profile.ChiselMaps})");
+            bool anyChisel = activeProfiles.Any(p => p.ChiselMaps);
+            int targetQuality = anyChisel ? activeProfiles.Where(p => p.ChiselMaps).Max(p => p.TargetQuality) : 0;
+            int maxAttempts = activeProfiles.Max(p => p.MaxAttemptsPerMap);
+            CraftLogger.Info("CONFIG", $"Action delay: {delay}ms | MaxAttempts: {maxAttempts} | ChiselTarget: {targetQuality}% (Enabled:{anyChisel}) | ActiveProfiles: {activeProfiles.Count}");
 
-            // Special Mode: Unconditional Vaal all maps in inventory
-            if (profile.VaalSetting == VaalMode.AllInventoryMaps)
+            // Special Mode: Unconditional Vaal all maps in inventory (if any active profile has AllInventoryMaps)
+            if (activeProfiles.Any(p => p.VaalSetting == VaalMode.AllInventoryMaps))
             {
                 CraftLogger.Step("VAAL_ALL", "Running 'Vaal All Maps in Inventory' mode...");
                 StatusMessage = "Applying Vaal Orbs to all maps in inventory...";
@@ -191,7 +207,7 @@ namespace MapCrafter.Services
                 CraftLogger.Step("SESSION", $"STARTING MAP #{craftedCount}/{mapsSnapshot.Count} at ({map.SlotX},{map.SlotY}) [{map.BaseName} T{map.Tier}]");
                 CraftLogger.Step("SESSION", $"Initial Stats: Quality={map.Quality}%, ItemQuant={map.ItemQuantity}%, AtlasDrops={map.AtlasDrops}%, Rarity=+{map.ItemRarityBonus}%, PackSize={map.PackSize}%" + (map.CurrencyBonus > 0 ? $", Cur=+{map.CurrencyBonus}%" : "") + (map.ScarabsBonus > 0 ? $", Threads=+{map.ScarabsBonus}%" : "") + (map.MoreMapsBonus > 0 ? $", Maps=+{map.MoreMapsBonus}%" : ""));
 
-                bool mapFinished = await ProcessSingleMap(gc, map, profile, settings, delay, ct, ignoredSlots);
+                bool mapFinished = await ProcessSingleMap(gc, map, activeProfiles, globalBannedMods, settings, delay, ct, ignoredSlots);
                 CraftLogger.Info("SESSION", $"FINISHED MAP #{craftedCount}: Success={mapFinished}, FinalStatus={map.Status}, Details='{map.StatusDetails}'");
                 CraftLogger.Step("SESSION", $"==================================================");
 
@@ -249,13 +265,24 @@ namespace MapCrafter.Services
             catch { }
         }
 
-        private async Task<bool> ProcessSingleMap(GameController gc, ParsedMapItem map, CraftingProfile profile, Settings settings, int delay, CancellationToken ct, HashSet<(int x, int y)>? ignoredSlots)
+        private async Task<bool> ProcessSingleMap(
+            GameController gc,
+            ParsedMapItem map,
+            IReadOnlyList<CraftingProfile> activeProfiles,
+            IReadOnlyList<string> globalBannedMods,
+            Settings settings,
+            int delay,
+            CancellationToken ct,
+            HashSet<(int x, int y)>? ignoredSlots)
         {
-            // Stage 1: Chisels (Continuous repeat-apply with Ctrl)
-            if (profile.ChiselMaps && map.Quality < profile.TargetQuality && !map.IsCorrupted)
+            // Stage 1: Chisels (Continuous repeat-apply with Shift)
+            bool anyChisel = activeProfiles.Any(p => p.ChiselMaps);
+            int targetQuality = anyChisel ? activeProfiles.Where(p => p.ChiselMaps).Max(p => p.TargetQuality) : 0;
+
+            if (anyChisel && map.Quality < targetQuality && !map.IsCorrupted)
             {
                 map.Status = CraftStatus.Chiseling;
-                CraftLogger.Step("CHISEL", $"Map quality {map.Quality}% < target {profile.TargetQuality}%. Starting chiseling stage...");
+                CraftLogger.Step("CHISEL", $"Map quality {map.Quality}% < target {targetQuality}%. Starting chiseling stage...");
 
                 var chisel = await _tracker.GetAvailableCurrencyWithRetry(gc, CurrencyKind.ChiselNormal, ignoredSlots, maxRetries: 3);
                 if (chisel == null)
@@ -265,7 +292,7 @@ namespace MapCrafter.Services
                 }
                 else
                 {
-                    StatusMessage = $"Chiseling map ({map.Quality}% -> {profile.TargetQuality}%)...";
+                    StatusMessage = $"Chiseling map ({map.Quality}% -> {targetQuality}%)...";
                     CraftLogger.Step("CHISEL", $"Selecting Cartographer's Chisel from {chisel.LocationDescription} (Stack: {chisel.StackCount})");
 
                     // Move to Chisel in Stash and Right-Click to pick it up with generous human settle
@@ -285,11 +312,11 @@ namespace MapCrafter.Services
                     await Task.Delay(Math.Max(150, (delay / 2) + _rng.Next(30)), ct);
 
                     int qualityAttempts = 0;
-                    int maxQualityAttempts = Math.Max(8, (profile.TargetQuality - map.Quality) + 3);
+                    int maxQualityAttempts = Math.Max(8, (targetQuality - map.Quality) + 3);
 
                     try
                     {
-                        while (map.Quality < profile.TargetQuality && qualityAttempts < maxQualityAttempts && !map.IsCorrupted)
+                        while (map.Quality < targetQuality && qualityAttempts < maxQualityAttempts && !map.IsCorrupted)
                         {
                             if (ct.IsCancellationRequested || CrafterInput.IsEmergencyStopPressed()) break;
 
@@ -307,7 +334,7 @@ namespace MapCrafter.Services
                                 map.Quality = refreshed.Quality;
                                 map.Rarity = refreshed.Rarity;
                                 CraftLogger.Info("CHISEL", $"Map quality updated: {prevQ}% -> {map.Quality}%");
-                                if (map.Quality >= profile.TargetQuality) break;
+                                if (map.Quality >= targetQuality) break;
                             }
                             else
                             {
@@ -327,12 +354,12 @@ namespace MapCrafter.Services
                         await Task.Delay(Math.Max(80, (delay / 4) + _rng.Next(20)), ct);
                     }
 
-                    CraftLogger.Info("CHISEL", $"Chiseling stage done. Final Quality: {map.Quality}% (Target: {profile.TargetQuality}%, Attempts used: {qualityAttempts})");
+                    CraftLogger.Info("CHISEL", $"Chiseling stage done. Final Quality: {map.Quality}% (Target: {targetQuality}%, Attempts used: {qualityAttempts})");
                 }
             }
             else
             {
-                CraftLogger.Info("CHISEL", $"Skipping chisels: ChiselMaps={profile.ChiselMaps}, Quality={map.Quality}%, Target={profile.TargetQuality}%");
+                CraftLogger.Info("CHISEL", $"Skipping chisels: ChiselMaps={anyChisel}, Quality={map.Quality}%, Target={targetQuality}%");
             }
 
             // Stage 2: Upgrade Normal -> Rare
@@ -386,27 +413,31 @@ namespace MapCrafter.Services
             }
 
             // Stage 4: Evaluation & Reroll Loop
-            map.Status = CraftStatus.Rerolling;
-            CraftLogger.Step("REROLL", $"Starting evaluation & reroll loop (Max attempts: {profile.MaxAttemptsPerMap}, Method: {profile.Method})...");
+            int maxAttempts = activeProfiles.Max(p => p.MaxAttemptsPerMap);
+            var rerollMethod = activeProfiles.Any(p => p.Method == RerollMethod.ChaosOrb) ? RerollMethod.ChaosOrb : RerollMethod.ScourAlch;
 
-            while (map.AttemptsUsed < profile.MaxAttemptsPerMap)
+            map.Status = CraftStatus.Rerolling;
+            CraftLogger.Step("REROLL", $"Starting evaluation & reroll loop (Max attempts: {maxAttempts}, Method: {rerollMethod}, Active Profiles: {activeProfiles.Count})...");
+
+            while (map.AttemptsUsed < maxAttempts)
             {
                 if (ct.IsCancellationRequested) return false;
 
-                // Evaluate current state
-                var eval = MapEvaluator.Evaluate(map, profile);
-                CraftLogger.Info("EVAL", $"Attempt #{map.AttemptsUsed} Evaluation: Passed={eval.Passed} | Reason: '{eval.Reason}'");
+                // Evaluate current state with composite evaluation
+                var compEval = MapEvaluator.EvaluateComposite(map, globalBannedMods, activeProfiles);
+                CraftLogger.Info("EVAL", $"Attempt #{map.AttemptsUsed} Evaluation: Passed={compEval.Passed} | Reason: '{compEval.Reason}'" + (compEval.Passed ? $" [Matched: {compEval.MatchedProfile!.Name}]" : ""));
                 CraftLogger.Info("EVAL", $"Current mods ({map.ModCount}): [{string.Join(" | ", map.ModLines)}]");
 
-                if (eval.Passed)
+                if (compEval.Passed)
                 {
-                    CraftLogger.Success("EVAL", $"Criteria MET for map at ({map.SlotX},{map.SlotY})!");
-                    var (finalSuccess, shouldContinueRerolling) = await FinalizeCraftedMap(gc, map, profile, delay, ct, ignoredSlots);
+                    map.MatchedProfileName = compEval.MatchedProfile!.Name;
+                    CraftLogger.Success("EVAL", $"Criteria MET for map at ({map.SlotX},{map.SlotY}) matching '{map.MatchedProfileName}'!");
+                    var (finalSuccess, shouldContinueRerolling) = await FinalizeCraftedMap(gc, map, compEval.MatchedProfile!, globalBannedMods, delay, ct, ignoredSlots);
                     if (finalSuccess) return true;
                     if (!shouldContinueRerolling) return false;
                 }
 
-                if (profile.Method == RerollMethod.ChaosOrb)
+                if (rerollMethod == RerollMethod.ChaosOrb)
                 {
                     var chaos = await _tracker.GetAvailableCurrencyWithRetry(gc, CurrencyKind.Chaos, ignoredSlots, maxRetries: 3);
                     if (chaos == null)
@@ -437,12 +468,12 @@ namespace MapCrafter.Services
 
                     try
                     {
-                        while (map.AttemptsUsed < profile.MaxAttemptsPerMap)
+                        while (map.AttemptsUsed < maxAttempts)
                         {
                             if (ct.IsCancellationRequested || CrafterInput.IsEmergencyStopPressed()) break;
 
                             map.AttemptsUsed++;
-                            StatusMessage = $"Rerolling map with Chaos ({map.AttemptsUsed}/{profile.MaxAttemptsPerMap})...";
+                            StatusMessage = $"Rerolling map with Chaos ({map.AttemptsUsed}/{maxAttempts})...";
 
                             int prevModCount = map.ModCount;
                             int prevQ = map.Quality;
@@ -467,18 +498,19 @@ namespace MapCrafter.Services
                             }
 
                             // Evaluate updated map
-                            var innerEval = MapEvaluator.Evaluate(map, profile);
-                            CraftLogger.Info("EVAL", $"Attempt #{map.AttemptsUsed} Evaluation: Passed={innerEval.Passed} | Reason: '{innerEval.Reason}'");
+                            var innerCompEval = MapEvaluator.EvaluateComposite(map, globalBannedMods, activeProfiles);
+                            CraftLogger.Info("EVAL", $"Attempt #{map.AttemptsUsed} Evaluation: Passed={innerCompEval.Passed} | Reason: '{innerCompEval.Reason}'" + (innerCompEval.Passed ? $" [Matched: {innerCompEval.MatchedProfile!.Name}]" : ""));
                             CraftLogger.Info("EVAL", $"Current stats: ItemQuant={map.ItemQuantity}% AtlasDrops={map.AtlasDrops}% Rarity=+{map.ItemRarityBonus}% PackSize={map.PackSize}% Maps=+{map.MoreMapsBonus}% Cur=+{map.CurrencyBonus}% Threads=+{map.ScarabsBonus}%");
                             CraftLogger.Info("EVAL", $"Current mods ({map.ModCount}): [{string.Join(" | ", map.ModLines)}]");
 
-                            if (innerEval.Passed)
+                            if (innerCompEval.Passed)
                             {
-                                CraftLogger.Success("EVAL", $"Criteria MET for map at ({map.SlotX},{map.SlotY})!");
+                                map.MatchedProfileName = innerCompEval.MatchedProfile!.Name;
+                                CraftLogger.Success("EVAL", $"Criteria MET for map at ({map.SlotX},{map.SlotY}) matching '{map.MatchedProfileName}'!");
                                 break;
                             }
 
-                            map.StatusDetails = $"Attempt {map.AttemptsUsed}: {innerEval.Reason}";
+                            map.StatusDetails = $"Attempt {map.AttemptsUsed}: {innerCompEval.Reason}";
 
                             // Full humanized ActionDelayMs wait before next roll
                             int humanDelay = Math.Max(200, delay + _rng.Next(-20, 40));
@@ -494,10 +526,11 @@ namespace MapCrafter.Services
                     }
 
                     // Check if passed criteria
-                    var postEval = MapEvaluator.Evaluate(map, profile);
+                    var postEval = MapEvaluator.EvaluateComposite(map, globalBannedMods, activeProfiles);
                     if (postEval.Passed)
                     {
-                        var (finalSuccess, shouldContinueRerolling) = await FinalizeCraftedMap(gc, map, profile, delay, ct, ignoredSlots);
+                        map.MatchedProfileName = postEval.MatchedProfile!.Name;
+                        var (finalSuccess, shouldContinueRerolling) = await FinalizeCraftedMap(gc, map, postEval.MatchedProfile!, globalBannedMods, delay, ct, ignoredSlots);
                         if (finalSuccess) return true;
                         if (!shouldContinueRerolling) return false;
                     }
@@ -505,8 +538,8 @@ namespace MapCrafter.Services
                 else // Scour + Alch
                 {
                     map.AttemptsUsed++;
-                    StatusMessage = $"Rerolling map ({map.AttemptsUsed}/{profile.MaxAttemptsPerMap}): {eval.Reason}";
-                    map.StatusDetails = $"Attempt {map.AttemptsUsed}: {eval.Reason}";
+                    StatusMessage = $"Rerolling map ({map.AttemptsUsed}/{maxAttempts}): {compEval.Reason}";
+                    map.StatusDetails = $"Attempt {map.AttemptsUsed}: {compEval.Reason}";
 
                     var scour = await _tracker.GetAvailableCurrencyWithRetry(gc, CurrencyKind.Scouring, ignoredSlots, maxRetries: 3);
                     var alch = await _tracker.GetAvailableCurrencyWithRetry(gc, CurrencyKind.Alchemy, ignoredSlots, maxRetries: 3);
@@ -538,18 +571,25 @@ namespace MapCrafter.Services
             }
 
             map.Status = CraftStatus.FailedMaxAttempts;
-            map.StatusDetails = $"Hit max attempts limit ({profile.MaxAttemptsPerMap})";
-            CraftLogger.Warn("SESSION", $"Map failed: Hit max attempts limit ({profile.MaxAttemptsPerMap})");
+            map.StatusDetails = $"Hit max attempts limit ({maxAttempts})";
+            CraftLogger.Warn("SESSION", $"Map failed: Hit max attempts limit ({maxAttempts})");
             return false;
         }
 
-        private async Task<(bool success, bool continueRerolling)> FinalizeCraftedMap(GameController gc, ParsedMapItem map, CraftingProfile profile, int delay, CancellationToken ct, HashSet<(int x, int y)>? ignoredSlots)
+        private async Task<(bool success, bool continueRerolling)> FinalizeCraftedMap(
+            GameController gc,
+            ParsedMapItem map,
+            CraftingProfile profile,
+            IReadOnlyList<string> globalBannedMods,
+            int delay,
+            CancellationToken ct,
+            HashSet<(int x, int y)>? ignoredSlots)
         {
             // Check Exalt Slam option
             bool passedAfterExalts = true;
             if (profile.ExaltSlam && map.HasModSpace && map.ExaltsUsed < profile.MaxExaltsToApply)
             {
-                passedAfterExalts = await HandleExaltSlamming(gc, map, profile, delay, ct, ignoredSlots);
+                passedAfterExalts = await HandleExaltSlamming(gc, map, profile, globalBannedMods, delay, ct, ignoredSlots);
             }
 
             if (passedAfterExalts)
@@ -573,7 +613,7 @@ namespace MapCrafter.Services
                 }
 
                 map.Status = CraftStatus.Succeeded;
-                map.StatusDetails = $"Passed in {map.AttemptsUsed} attempts (Q:{map.Quality}% Quant:{map.ItemQuantity}% Atlas:{map.AtlasDrops}% Rar:+{map.ItemRarityBonus}% PS:{map.PackSize}%)";
+                map.StatusDetails = $"Matched '{map.MatchedProfileName}' in {map.AttemptsUsed} attempts (Q:{map.Quality}% Quant:{map.ItemQuantity}% Atlas:{map.AtlasDrops}% Rar:+{map.ItemRarityBonus}% PS:{map.PackSize}%)";
                 CraftLogger.Success("SESSION", $"Map crafting SUCCESS: {map.StatusDetails}");
                 return (true, false);
             }
@@ -591,9 +631,16 @@ namespace MapCrafter.Services
             }
         }
 
-        private async Task<bool> HandleExaltSlamming(GameController gc, ParsedMapItem map, CraftingProfile profile, int delay, CancellationToken ct, HashSet<(int x, int y)>? ignoredSlots)
+        private async Task<bool> HandleExaltSlamming(
+            GameController gc,
+            ParsedMapItem map,
+            CraftingProfile profile,
+            IReadOnlyList<string> globalBannedMods,
+            int delay,
+            CancellationToken ct,
+            HashSet<(int x, int y)>? ignoredSlots)
         {
-            CraftLogger.Step("EXALT", $"Starting Exalt Slam stage. Mod space: {map.ModCount}/6, Allowed slams: {profile.MaxExaltsToApply}");
+            CraftLogger.Step("EXALT", $"Starting Exalt Slam stage for '{profile.Name}'. Mod space: {map.ModCount}/6, Allowed slams: {profile.MaxExaltsToApply}");
             while (map.HasModSpace && map.ExaltsUsed < profile.MaxExaltsToApply)
             {
                 if (ct.IsCancellationRequested || CrafterInput.IsEmergencyStopPressed()) return false;
@@ -603,6 +650,7 @@ namespace MapCrafter.Services
                 {
                     CraftLogger.Warn("EXALT", "Out of Exalted Orbs in Stash / Bag! Finishing without more slams.");
                     StatusMessage = "Out of Exalted Orbs (finishing without more slams)";
+                    map.StatusDetails += " [Exalt skipped: No Exalted Orbs detected in active stash/bag]";
                     return true;
                 }
 
@@ -627,16 +675,28 @@ namespace MapCrafter.Services
                 map.ExaltsUsed++;
 
                 var refreshed = await WaitForMapChange(gc, map.SlotX, map.SlotY, map.Quality, map.Rarity, prevModCount, map.AtlasDrops, map.PackSize, prevMods, timeoutMs: 1000);
-                if (refreshed != null)
+                if (refreshed != null && (refreshed.ModCount > prevModCount || refreshed.RawModNames.Count > prevMods.Count))
                 {
                     UpdateMapData(map, refreshed);
+                    CraftLogger.Success("EXALT", $"Exalt slam #{map.ExaltsUsed} confirmed! Mod count: {prevModCount} -> {map.ModCount}");
                 }
                 else
                 {
-                    CraftLogger.Warn("EXALT", "Could not detect map change after Exalt slam.");
+                    CraftLogger.Warn("EXALT", "Could not detect new mod on map after Exalt slam. Affix space may be saturated.");
+                    map.StatusDetails += " [Exalt slam did not add affix]";
+                    break;
                 }
 
-                // Re-evaluate immediately
+                // Check global build-banned mods first
+                var bricker = MapEvaluator.CheckGlobalBannedMods(map, globalBannedMods);
+                if (bricker != null)
+                {
+                    map.StatusDetails = $"Exalt slammed global build-banned mod: '{bricker}'";
+                    CraftLogger.Warn("EXALT", $"Exalt slam hit global build-banned mod: '{bricker}'");
+                    return false;
+                }
+
+                // Re-evaluate immediately against matched profile
                 var eval = MapEvaluator.Evaluate(map, profile);
                 CraftLogger.Info("EXALT", $"Post-slam evaluation: Passed={eval.Passed}, Reason: '{eval.Reason}', ModCount={map.ModCount}, Mods: [{string.Join(" | ", map.ModLines)}]");
                 if (!eval.Passed)
